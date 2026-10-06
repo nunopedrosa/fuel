@@ -6,7 +6,7 @@ The application is designed around a simple rule: **personal vehicle and fill-up
 
 FuelLog therefore needs no account, database, login, analytics service, cloud sync, or tracking infrastructure. DreamHost or GitHub Pages only serves the static application files plus one optional same-origin PHP script (`api/stations.php`, see [Station proxy](#station-proxy)). After the PWA application shell has been cached, normal fuel logging works offline and places almost no continuing load on the host.
 
-Current Portuguese fuel-station prices are an optional online feature. They are requested only when the user explicitly asks to find stations — via the same-origin station proxy when it is enabled in `config.js`, or directly by the user's browser from the public DGEG service when the proxy is disabled or unreachable.
+Fuel-station prices for Portugal, Spain and France, plus official reference prices for Belgium and the Netherlands, are an optional online feature supplied by public/official data providers (see [Fuel price providers](#fuel-price-providers)). They are requested only when the user explicitly asks to find stations — via the same-origin station proxy when it is enabled in `config.js`, or directly by the user's browser from the public provider when the proxy is disabled or unavailable.
 
 ---
 
@@ -23,7 +23,7 @@ Current Portuguese fuel-station prices are an optional online feature. They are 
 - [Importing existing fuel records](#importing-existing-fuel-records)
 - [FuelLog JSON backup format](#fuellog-json-backup-format)
 - [CSV format](#csv-format)
-- [Portuguese station prices](#portuguese-station-prices)
+- [Fuel price providers](#fuel-price-providers)
 - [Offline behaviour and caching](#offline-behaviour-and-caching)
 - [iPhone 6 / iOS 12 support](#iphone-6--ios-12-support)
 - [Browser compatibility](#browser-compatibility)
@@ -91,9 +91,11 @@ For the selected vehicle FuelLog displays:
 
 ### Fuel prices
 
-- Portuguese DGEG fuel types
-- DGEG districts
-- current reported station prices
+- multi-country providers: station prices for Portugal, Spain and France; official reference prices for Belgium and the Netherlands
+- canonical fuel catalogue with multilingual name matching
+- source provenance and staleness labels on every price
+- your own fill-up history surfaced as a private local price source ("You paid … here")
+- "Log fill-up here" from a station card or map popup
 - optional device geolocation
 - radius filtering when location is available
 - sorting by price and then distance
@@ -124,8 +126,8 @@ The following information is stored in **IndexedDB on the user's browser/device*
 - vehicles
 - fuel records
 - application settings
-- cached DGEG fuel types
-- cached DGEG station searches
+- cached provider fuel types/regions
+- cached provider station searches and reference prices
 
 ### Not sent to `fuel.trekm.com`
 
@@ -182,13 +184,13 @@ See [PRIVACY.md](PRIVACY.md) for the focused privacy statement.
              | vehicles           |
              | fill-ups           |
              | settings           |
-             | DGEG cache         |
+             | price cache        |
              +--------------------+
                         |
                         | only after an explicit
                         | station-price search
                         v
-              DGEG public service
+              public fuel-price provider
 ```
 
 A normal workflow such as opening FuelLog, adding a fill-up, editing a vehicle or viewing history does not require the application server once the PWA files are available locally.
@@ -739,40 +741,37 @@ Fields that require quoting are escaped using normal CSV rules.
 
 ---
 
-# Portuguese station prices
+# Fuel price providers
 
-FuelLog can query the public Portuguese fuel-price service operated by **DGEG**.
+FuelLog uses public, official fuel-price sources through a provider registry (`js/prices/providers.js`). Provider code lives under `js/prices/providers/`.
 
-The configured API base is:
+| Country | Provider | Kind |
+|---|---|---|
+| PT | DGEG | station prices |
+| ES | Minetur/MITECO Geoportal Gasolineras | station prices |
+| FR | data.economie.gouv.fr (flux instantané) | station prices |
+| BE | FPS Economy / Statbel | official maximum prices |
+| NL | CBS (80416ned) | national average prices |
 
-```text
-https://precoscombustiveis.dgeg.gov.pt/api/PrecoComb/
-```
+Every price shown carries provenance (provider, price type, source update time) and a staleness marker when cached data is used. Provider endpoints, licences, cache TTLs and the canonical fuel mapping are documented in [docs/PROVIDERS.md](docs/PROVIDERS.md); the full design handover is in [docs/FuelLog-Devin-European-Providers-Handover.md](docs/FuelLog-Devin-European-Providers-Handover.md).
 
-The application currently uses DGEG operations for information such as:
+## When providers are contacted
 
-- fuel types
-- districts
-- station search
-- station details/reference data where required
+Providers are contacted only when the user opens/uses the price feature and an appropriate locally cached result is unavailable or expired. Belgium/Netherlands reference prices are fetched when the Prices page is opened for those countries.
 
-## When DGEG is contacted
-
-DGEG is contacted only when the user opens/uses the price feature and an appropriate locally cached result is unavailable or expired.
-
-Normal fuel logging does not contact DGEG.
+Normal fuel logging never contacts a price provider.
 
 ## Location
 
 FuelLog can ask the browser for location when distance/radius filtering is requested.
 
-Location permission belongs to the browser/operating system. When the station proxy is enabled, the browser POSTs the location (rounded to about 100 m) to the site's own `api/stations.php`; the coordinates are never stored there. With the proxy disabled, the location stays in the browser and is used only for local distance calculations.
+Location permission belongs to the browser/operating system. When the station proxy is enabled (Portugal/Spain station searches), the browser POSTs the location (rounded to about 100 m) to the site's own `api/stations.php`; the coordinates are never stored there. In France, the rounded coordinates are sent directly to data.economie.gouv.fr as part of the radius query. With the proxy disabled, the location stays in the browser and is used only for local distance calculations (Portugal/Spain direct mode). Belgium/Netherlands reference prices use no location at all.
 
 ## Station proxy
 
 `api/stations.php` is an optional, dependency-free PHP 7.4+ endpoint intended for the DreamHost deployment. It is enabled by default via `stationProxy` in `config.js`; set it to `null` for a purely static host such as GitHub Pages.
 
-The proxy fetches the full station list for a fuel type from DGEG at most once per hour, stores it in `api/cache/` as a 0.1° grid index, and answers `POST {fuel, lat, lon, radius}` queries with the stations inside the radius. Phones therefore download only nearby stations instead of a multi-megabyte nationwide response. It accepts only same-origin POST requests, is not an open relay (the upstream URL is fixed and the only parameters are fuel, coordinates and radius), and never logs or persists the request coordinates. If the proxy fails, the app warns and falls back to querying DGEG directly.
+The proxy serves the Portuguese (`pt-dgeg`, one file per fuel type) and Spanish (`es-minetur`, a single ~10 MB nationwide dataset refreshed hourly on the server) providers. It fetches the upstream data at most once per hour, stores it in `api/cache/` as a 0.1° grid index, and answers `POST {provider, fuel, lat, lon, radius}` queries with the stations inside the radius. Phones therefore download only nearby stations instead of a multi-megabyte nationwide response. It accepts only same-origin POST requests, is not an open relay (the upstream URL is fixed and the only parameters are fuel, coordinates and radius), and never logs or persists the request coordinates. If the proxy fails, the app warns and falls back to querying the provider directly (where a direct mode exists).
 
 ## Price accuracy
 
@@ -780,7 +779,7 @@ External price information can be delayed, unavailable or incorrect. Always conf
 
 ## Non-commercial use
 
-This project is intended for personal/non-commercial use. DGEG data remains subject to DGEG's own conditions and is not covered by FuelLog's MIT licence.
+This project is intended for personal/non-commercial use. External fuel-price data remains subject to each provider's own conditions and licence and is not covered by FuelLog's MIT licence.
 
 ---
 
@@ -800,20 +799,21 @@ The service worker stores the application shell, including first-party resources
 
 This allows the installed application to start and perform core logging while offline.
 
-The service worker deliberately does not treat external DGEG responses as ordinary application-shell assets.
+The service worker deliberately does not treat external provider responses as ordinary application-shell assets.
 
-## IndexedDB DGEG cache
+## IndexedDB provider cache
 
-DGEG data is cached explicitly inside IndexedDB where FuelLog can apply purpose-specific freshness rules.
+Provider data is cached explicitly inside IndexedDB where FuelLog can apply purpose-specific freshness rules.
 
 Current policy:
 
 - station-search results: **15 minutes**
-- fuel-type/reference data: **30 days**
+- fuel-type/region catalogues: **30 days**
+- Belgium reference prices: **6 hours**; Netherlands reference prices: **24 hours**
 
-If a current station cache exists, repeated searches can reuse it instead of performing another DGEG request.
+If a current cache exists, repeated searches reuse it instead of contacting the provider again.
 
-If the network request fails and older cached station data exists, FuelLog may use that cached response as a fallback and identifies cached results in the interface.
+If the network request fails and older cached data exists, FuelLog may use that cached response as a fallback and identifies stale results in the interface.
 
 ---
 
@@ -844,9 +844,9 @@ An iPhone 6 has much less memory than a current phone. FuelLog therefore:
 - avoids a bundled XLSX engine
 - avoids large third-party frameworks
 - limits displayed station results
-- requires a district for DGEG station searches on legacy iOS
+- requires a region for station searches in direct mode (Portugal on legacy iOS, Spain always; never when the proxy is used)
 
-The district requirement prevents the old phone from unnecessarily processing a nationwide response containing thousands of stations.
+The region requirement prevents the old phone from unnecessarily processing a nationwide response containing thousands of stations.
 
 See [COMPATIBILITY.md](COMPATIBILITY.md) for the focused compatibility notes.
 
@@ -893,7 +893,7 @@ There is:
 - no scheduled job
 - no secret configuration
 
-`api/stations.php` requires PHP 7.4+, which DreamHost provides; the rest of the application needs no server runtime. For GitHub Pages (or any static-only host), set `stationProxy: null` in `config.js` and the app queries DGEG directly.
+`api/stations.php` requires PHP 7.4+, which DreamHost provides; the rest of the application needs no server runtime. For GitHub Pages (or any static-only host), set `stationProxy: null` in `config.js` and the app queries each provider directly.
 
 ## `.htaccess`
 
@@ -973,7 +973,7 @@ For large optional functionality, prefer an explicit optional/on-demand mechanis
 ```text
 .
 |-- index.html                 main application HTML
-|-- app.js                     UI, calculations, import/export and DGEG logic
+|-- app.js                     UI, calculations, import/export and price-search logic
 |-- db.js                      IndexedDB wrapper
 |-- config.js                  runtime/static configuration
 |-- styles.css                 application styling and old-Safari fallbacks
@@ -982,8 +982,18 @@ For large optional functionality, prefer an explicit optional/on-demand mechanis
 |-- .htaccess                  DreamHost/Apache headers and caching
 |
 |-- api/
-|   |-- stations.php           optional same-origin DGEG radius-search proxy
+|   |-- stations.php           optional same-origin radius-search proxy (PT/ES datasets)
 |   `-- cache/                 server-side station grid-index cache (denied via .htaccess)
+|
+|-- js/
+|   `-- prices/               fuel catalogue and provider registry
+|       |-- fuels.js          canonical fuel ids and multilingual name matching
+|       |-- providers.js      provider registry and shared helpers
+|       `-- providers/        pt-dgeg, es-minetur, fr-government, be-fps, nl-cbs
+|
+|-- docs/
+|   |-- PROVIDERS.md          provider architecture, licences and data flows
+|   `-- FuelLog-Devin-European-Providers-Handover.md  design handover notes
 |
 |-- vendor/
 |   `-- leaflet/              vendored Leaflet 1.9.4 for the station map
@@ -1087,7 +1097,7 @@ Key:
 key
 ```
 
-Used for lightweight application settings such as the active vehicle, preferred DGEG fuel type and backup metadata.
+Used for lightweight application settings such as the active vehicle, preferred fuel selections and backup metadata.
 
 ## `priceCache`
 
@@ -1097,7 +1107,7 @@ Key:
 key
 ```
 
-Stores timestamped external reference/search results so repeated DGEG requests can be avoided.
+Stores timestamped external reference/search results so repeated provider requests can be avoided.
 
 ---
 
@@ -1176,8 +1186,8 @@ FuelLog JSON backups preserve stable IDs and are preferable for exact restoratio
 Possible causes include:
 
 - no internet connection
-- temporary DGEG service outage
-- DGEG API change
+- temporary provider service outage
+- provider API change
 - browser cross-origin policy change
 - location permission denied when a radius search needs location
 - no district selected on iOS 12
@@ -1232,8 +1242,8 @@ FuelLog does not automatically upload backups anywhere.
 - XLS/XLSX import is not bundled
 - Generic import duplicate detection is heuristic rather than semantic
 - Fuel costs are supported; maintenance/insurance/tolls are not yet part of the data model
-- DGEG availability and API compatibility are outside FuelLog's control
-- DGEG station data currently focuses the price feature on Portugal
+- provider availability and API compatibility are outside FuelLog's control
+- Belgium and the Netherlands currently expose only reference prices (no public station list)
 - Old iOS export requires the Safari Share-sheet workaround
 - Very large imports are intentionally limited to protect low-memory devices
 
@@ -1248,7 +1258,7 @@ Potential enhancements that can remain consistent with the project's architectur
 - optional XLSX importer loaded only when requested
 - import preview with explicit column mapping
 - more sophisticated duplicate-review screen
-- additional European public fuel-price providers behind a provider interface
+- additional European public fuel-price providers behind the existing provider interface (e.g. the EU Oil Bulletin)
 - station favourites
 - effective-cost comparison including fuel used to reach a station
 - richer charts that remain lightweight on old phones
@@ -1292,4 +1302,4 @@ In particular, changes should preserve:
 
 FuelLog application source code and original FuelLog artwork are released under the **MIT License**. See [LICENSE](LICENSE).
 
-External DGEG information is not part of the repository and remains subject to DGEG's terms and conditions.
+External provider data is not part of the repository and remains subject to each provider's terms and conditions.

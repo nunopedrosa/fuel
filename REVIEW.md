@@ -30,6 +30,10 @@ The price finder contacts DGEG directly. The host is not a relay and cannot be a
 
 An optional same-origin station proxy (`api/stations.php`, PHP 7.4+, enabled via `stationProxy` in `config.js`) was added for the DreamHost deployment. It caches each fuel type's DGEG station list server-side for one hour and answers only radius queries, so clients download just nearby stations. It is not an open relay: the upstream DGEG URL is fixed, it accepts POST only, rejects cross-origin requests via the `Origin` header, and never stores request coordinates. Static-only deployments (GitHub Pages) set `stationProxy: null` and keep the direct-DGEG behaviour reviewed above.
 
+## Update — European providers
+
+Fuel-price lookup is now multi-provider via a registry in `js/prices/`: station prices for Portugal (DGEG), Spain (Minetur/MITECO) and France (data.economie.gouv.fr), plus official reference prices for Belgium (Statbel) and the Netherlands (CBS). All sources are public/official open data with stated licences; no operator sites, scraping, private endpoints or commercial aggregators are used. The CSP `connect-src` allowlist covers exactly the provider hosts: `precoscombustiveis.dgeg.gov.pt`, `sedeaplicaciones.minetur.gob.es`, `data.economie.gouv.fr`, `bestat.statbel.fgov.be`, `opendata.cbs.nl`. The optional station proxy is unchanged in shape and now serves the PT and ES datasets.
+
 ## Remaining considerations
 
 - Browser storage can be cleared; JSON backups remain important.

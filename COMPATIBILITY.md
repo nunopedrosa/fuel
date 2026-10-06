@@ -12,14 +12,14 @@ FuelLog relies on capabilities available on that target:
 
 - IndexedDB for local records
 - Service Workers for the offline app shell (supported by iOS from 11.3)
-- Fetch for optional DGEG requests
+- Fetch for optional fuel-price provider requests
 - File input for importing backups/data files
 - Apple `apple-mobile-web-app-*` metadata and a 180x180 touch icon for Add to Home Screen
 
 ## Old-iPhone accommodations
 
 - Imports are capped at 5 MB per file to avoid excessive memory pressure. Larger histories can be split and merged in several imports.
-- On iOS 12, station-price search requires a DGEG district before downloading results when the station proxy is disabled or unavailable (direct-DGEG mode). This avoids loading several thousand Portuguese stations into a 1 GB device. With the proxy enabled, only nearby stations are downloaded and no district is needed.
+- Station-price search requires choosing a region before downloading results when the response would be nationwide: Portugal in direct mode on legacy iOS, and Spain always in direct mode (proxy disabled or unavailable). With the proxy enabled, only nearby stations are downloaded and no region is needed. This avoids loading several thousand stations into a 1 GB device.
 - Generated-file downloads use an iOS 12 fallback. The export is opened locally in Safari and can be saved/copied using the Share sheet.
 - CSS includes fallbacks for missing flex-gap and prefixes `backdrop-filter`.
 

@@ -1,19 +1,29 @@
 <?php
 /**
- * api/stations.php — same-origin radius-search proxy for DGEG fuel stations.
+ * api/stations.php — same-origin radius-search proxy for public fuel-station data.
  *
- * POST (JSON or form-encoded): {"fuel":int,"lat":float,"lon":float,"radius":float}
- * Returns the stations within the radius (km), sorted by price then distance.
- * The full per-fuel station list is fetched from DGEG at most once per hour and
- * cached in api/cache/ as a 0.1-degree grid index. Request coordinates are
- * never logged or persisted.
+ * POST (JSON or form-encoded): {"provider":"pt-dgeg"|"es-minetur","fuel":string,
+ * "lat":float,"lon":float,"radius":float}. Requests without "provider" are treated
+ * as pt-dgeg. Returns stations within the radius (km), sorted by price then
+ * distance. Each provider's dataset is fetched at most once per hour and cached
+ * in api/cache/ as a 0.1-degree grid index. Request coordinates are never
+ * logged or persisted.
  */
 
+ini_set('memory_limit', '256M');
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
 
 function fail($code, $msg) { http_response_code($code); echo json_encode(['error' => $msg]); exit; }
+
+const ES_FUEL_COLS = [
+    'Precio Gasoleo A', 'Precio Gasoleo Premium', 'Precio Gasolina 95 E5',
+    'Precio Gasolina 95 E10', 'Precio Gasolina 95 E5 Premium', 'Precio Gasolina 98 E5',
+    'Precio Gasolina 98 E10', 'Precio Gases licuados del petróleo',
+    'Precio Gas Natural Comprimido', 'Precio Gas Natural Licuado',
+    'Precio Gasolina 95 E85', 'Precio Adblue',
+];
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['health'])) {
@@ -34,8 +44,11 @@ if (isset($_SERVER['HTTP_ORIGIN'])) {
 $in = json_decode(file_get_contents('php://input'), true);
 if (!is_array($in)) $in = $_POST;
 
-$fuel = isset($in['fuel']) ? filter_var($in['fuel'], FILTER_VALIDATE_INT) : false;
-if ($fuel === false || $fuel <= 0) fail(400, 'Invalid fuel');
+$provider = isset($in['provider']) ? (string)$in['provider'] : 'pt-dgeg';
+if ($provider !== 'pt-dgeg' && $provider !== 'es-minetur') fail(400, 'Invalid provider');
+$fuel = isset($in['fuel']) ? (string)$in['fuel'] : '';
+if ($provider === 'pt-dgeg' && !preg_match('/^\d{1,6}$/', $fuel)) fail(400, 'Invalid fuel');
+if ($provider === 'es-minetur' && !in_array($fuel, ES_FUEL_COLS, true)) fail(400, 'Invalid fuel');
 $lat = isset($in['lat']) ? filter_var($in['lat'], FILTER_VALIDATE_FLOAT) : false;
 $lon = isset($in['lon']) ? filter_var($in['lon'], FILTER_VALIDATE_FLOAT) : false;
 if ($lat === false || $lat < -90 || $lat > 90) fail(400, 'Invalid lat');
@@ -60,13 +73,21 @@ function loadIndex($file) {
     return is_array($d) && isset($d['ts'], $d['cells']) ? $d : null;
 }
 
-function fetchUpstream($fuel) {
-    $url = 'https://precoscombustiveis.dgeg.gov.pt/api/PrecoComb/PesquisarPostos?idsTiposComb=' . $fuel . '&qtdPorPagina=4000&pagina=1&orderDesc=0';
+function upstreamUrl($provider, $fuel) {
+    if ($provider === 'es-minetur') {
+        return 'https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/';
+    }
+    return 'https://precoscombustiveis.dgeg.gov.pt/api/PrecoComb/PesquisarPostos?idsTiposComb=' . $fuel . '&qtdPorPagina=4000&pagina=1&orderDesc=0';
+}
+
+function fetchUpstream($provider, $fuel) {
+    $url = upstreamUrl($provider, $fuel);
+    $timeout = $provider === 'es-minetur' ? 60 : 20;
     if (function_exists('curl_init')) {
         $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 20,
+            CURLOPT_TIMEOUT => $timeout,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_USERAGENT => 'FuelLog/1.0 (+https://fuel.trekm.com)',
         ]);
@@ -74,7 +95,7 @@ function fetchUpstream($fuel) {
         $code = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
         return ($body === false || $code >= 400) ? null : $body;
     }
-    $ctx = stream_context_create(['http' => ['timeout' => 20, 'follow_location' => 1, 'user_agent' => 'FuelLog/1.0 (+https://fuel.trekm.com)']]);
+    $ctx = stream_context_create(['http' => ['timeout' => $timeout, 'follow_location' => 1, 'user_agent' => 'FuelLog/1.0 (+https://fuel.trekm.com)']]);
     $body = @file_get_contents($url, false, $ctx);
     return $body === false ? null : $body;
 }
@@ -99,33 +120,71 @@ function pnum($x) {
     return is_numeric($s) ? (float)$s : NAN;
 }
 
-function normStation($s) {
-    return [
-        val($s, ['Id', 'id', 'ID', 'IdPosto']),
-        val($s, ['Nome', 'nome', 'NomePosto', 'Designacao']) ?: 'Fuel station',
-        val($s, ['Marca', 'marca']) ?: '',
-        val($s, ['Morada', 'morada']) ?: '',
-        val($s, ['Municipio', 'municipio', 'Localidade', 'localidade']) ?: '',
-        (string)(val($s, ['DataAtualizacao', 'dataAtualizacao', 'Atualizado']) ?: ''),
-        pnum(val($s, ['Latitude', 'latitude', 'Lat', 'lat'])),
-        pnum(val($s, ['Longitude', 'longitude', 'Lng', 'lng'])),
-        pnum(val($s, ['Preco', 'preco', 'Preço', 'price'])),
-    ];
+function esDateIso($s) {
+    $d = DateTime::createFromFormat('d/m/Y H:i:s', trim((string)$s));
+    return $d ? $d->format('c') : null;
 }
 
-function buildIndex($fuel, $raw) {
+function esTitle($s) {
+    $s = trim((string)$s);
+    if (function_exists('mb_convert_case')) return mb_convert_case(mb_strtolower($s, 'UTF-8'), MB_CASE_TITLE, 'UTF-8');
+    return ucwords(strtolower($s));
+}
+
+function buildIndex($provider, $fuel, $raw) {
     $d = json_decode($raw, true);
     $cells = [];
     $n = 0;
-    foreach (resultRows($d) as $row) {
-        if (!is_array($row)) continue;
-        $s = normStation($row);
-        if (!is_finite($s[6]) || !is_finite($s[7]) || !is_finite($s[8])) continue;
-        $key = intval(floor($s[6] / 0.1)) . '_' . intval(floor($s[7] / 0.1));
-        $cells[$key][] = $s;
-        $n++;
+    $sourceUpdatedAt = null;
+    if ($provider === 'es-minetur') {
+        $rows = is_array($d) && isset($d['ListaEESSPrecio']) && is_array($d['ListaEESSPrecio']) ? $d['ListaEESSPrecio'] : [];
+        $sourceUpdatedAt = isset($d['Fecha']) ? esDateIso($d['Fecha']) : null;
+        foreach ($rows as $row) {
+            if (!is_array($row)) continue;
+            $lat = pnum(val($row, ['Latitud']));
+            $lon = pnum(val($row, ['Longitud (WGS84)']));
+            if (!is_finite($lat) || !is_finite($lon)) continue;
+            $prices = [];
+            foreach (ES_FUEL_COLS as $c) {
+                $p = pnum(val($row, [$c]));
+                if (is_finite($p)) $prices[$c] = $p;
+            }
+            if (!$prices) continue;
+            $rotulo = (string)(val($row, ['Rótulo']) ?: 'Fuel station');
+            $loc = esTitle(val($row, ['Localidad']));
+            $key = intval(floor($lat / 0.1)) . '_' . intval(floor($lon / 0.1));
+            $cells[$key][] = [
+                val($row, ['IDEESS']),
+                $loc ? $rotulo . ' · ' . $loc : $rotulo,
+                $rotulo,
+                (string)(val($row, ['Dirección']) ?: ''),
+                (string)(val($row, ['Municipio']) ?: ''),
+                (string)($sourceUpdatedAt ?: ''),
+                $lat, $lon, $prices,
+            ];
+            $n++;
+        }
+    } else {
+        foreach (resultRows($d) as $row) {
+            if (!is_array($row)) continue;
+            $lat = pnum(val($row, ['Latitude', 'latitude', 'Lat', 'lat']));
+            $lon = pnum(val($row, ['Longitude', 'longitude', 'Lng', 'lng']));
+            $price = pnum(val($row, ['Preco', 'preco', 'Preço', 'price']));
+            if (!is_finite($lat) || !is_finite($lon) || !is_finite($price)) continue;
+            $key = intval(floor($lat / 0.1)) . '_' . intval(floor($lon / 0.1));
+            $cells[$key][] = [
+                val($row, ['Id', 'id', 'ID', 'IdPosto']),
+                val($row, ['Nome', 'nome', 'NomePosto', 'Designacao']) ?: 'Fuel station',
+                (string)(val($row, ['Marca', 'marca']) ?: ''),
+                (string)(val($row, ['Morada', 'morada']) ?: ''),
+                (string)(val($row, ['Municipio', 'municipio', 'Localidade', 'localidade']) ?: ''),
+                (string)(val($row, ['DataAtualizacao', 'dataAtualizacao', 'Atualizado']) ?: ''),
+                $lat, $lon, [$fuel => $price],
+            ];
+            $n++;
+        }
     }
-    return ['ts' => time(), 'fuel' => $fuel, 'count' => $n, 'cells' => $cells];
+    return ['ts' => time(), 'provider' => $provider, 'fuel' => $fuel, 'count' => $n, 'sourceUpdatedAt' => $sourceUpdatedAt, 'cells' => $cells];
 }
 
 function hav($a, $b, $c, $d) {
@@ -137,20 +196,22 @@ function hav($a, $b, $c, $d) {
 }
 
 $dir = cacheDir();
-$file = $dir . '/stations-' . $fuel . '.json';
+$file = $dir . '/' . $provider . '-' . ($provider === 'es-minetur' ? 'all' : $fuel) . '.json';
 $idx = loadIndex($file);
 $stale = false;
 
 if (!$idx || time() - $idx['ts'] > 3600) {
-    $lock = fopen($dir . '/stations-' . $fuel . '.lock', 'c');
+    $lock = fopen($dir . '/' . $provider . '-' . ($provider === 'es-minetur' ? 'all' : $fuel) . '.lock', 'c');
     if ($lock && flock($lock, LOCK_EX | LOCK_NB)) {
-        $raw = fetchUpstream($fuel);
-        $new = $raw !== null ? buildIndex($fuel, $raw) : null;
+        $raw = fetchUpstream($provider, $fuel);
+        $new = $raw !== null ? buildIndex($provider, $fuel, $raw) : null;
+        unset($raw);
         if ($new && $new['count'] > 0) {
             $tmp = $file . '.tmp-' . getmypid();
-            $json = json_encode($new, JSON_INVALID_UTF8_SUBSTITUTE);
-            if ($json !== false && file_put_contents($tmp, $json) !== false) rename($tmp, $file);
-            $idx = $new;
+            file_put_contents($tmp, json_encode($new, JSON_INVALID_UTF8_SUBSTITUTE));
+            unset($new);
+            rename($tmp, $file);
+            $idx = loadIndex($file);
         } elseif ($idx) {
             $stale = true;
         }
@@ -179,12 +240,13 @@ for ($cy = $cy0; $cy <= $cy1; $cy++) {
         $key = $cy . '_' . $cx;
         if (empty($idx['cells'][$key])) continue;
         foreach ($idx['cells'][$key] as $r) {
+            if (!isset($r[8][$fuel])) continue;
             $dist = hav($lat, $lon, $r[6], $r[7]);
             if ($dist > $radius) continue;
             $out[] = [
                 'id' => $r[0], 'name' => $r[1], 'brand' => $r[2], 'address' => $r[3],
                 'town' => $r[4], 'updated' => $r[5], 'lat' => $r[6], 'lon' => $r[7],
-                'price' => $r[8], 'distance' => round($dist, 2),
+                'price' => $r[8][$fuel], 'distance' => round($dist, 2),
             ];
         }
     }
@@ -194,8 +256,10 @@ $count = count($out);
 $out = array_slice($out, 0, 200);
 
 echo json_encode([
+    'provider' => $provider,
     'stations' => $out,
     'count' => $count,
     'cachedAt' => gmdate('c', $idx['ts']),
+    'sourceUpdatedAt' => isset($idx['sourceUpdatedAt']) ? $idx['sourceUpdatedAt'] : null,
     'stale' => $stale,
 ], JSON_INVALID_UTF8_SUBSTITUTE);
