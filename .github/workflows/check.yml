@@ -23,5 +23,10 @@ jobs:
           node --check sw.js
       - name: Validate manifest JSON
         run: python3 -m json.tool manifest.webmanifest >/dev/null
-      - name: Ensure no PHP backend is shipped
-        run: test -z "$(find . -type f -name '*.php' -print -quit)"
+      - name: Only the station proxy may be PHP
+        run: test "$(find . -type f -name '*.php' -not -path './.git/*' | sort | tr '\n' ' ')" = "./api/stations.php "
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+      - name: Lint PHP
+        run: php -l api/stations.php

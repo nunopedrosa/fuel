@@ -4,3 +4,6 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+api/cache/*
+!api/cache/.htaccess
+!api/cache/.gitkeep
