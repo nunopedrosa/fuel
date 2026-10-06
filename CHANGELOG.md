@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Features
+
+- Added a Map tab to the Prices page showing matching stations and the user's location on an OpenStreetMap/Leaflet map.
+- Added a "Search this area" button on the map that re-runs the station search around the current map centre.
+- Vendored Leaflet 1.9.4 locally (`vendor/leaflet/`); the List tab still works offline from cached results.
+
 ### Documentation
 
 - Expanded `README.md` into the primary project and user manual.

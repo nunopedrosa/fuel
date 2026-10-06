@@ -97,6 +97,8 @@ For the selected vehicle FuelLog displays:
 - optional device geolocation
 - radius filtering when location is available
 - sorting by price and then distance
+- optional map view of stations and the user's location (OpenStreetMap tiles)
+- "search this area" around the current map centre
 - on-device result caching
 - reduced-memory search path for iPhone 6 / iOS 12
 
@@ -944,9 +946,9 @@ Do not commit deployment credentials or unrelated server files into the reposito
 
 ## Dependency philosophy
 
-The core application currently uses no runtime third-party JavaScript dependencies.
+The core application currently uses a single runtime third-party JavaScript dependency: a locally vendored copy of Leaflet 1.9.4 (`vendor/leaflet/`) that powers the optional station map. Everything else is dependency-free.
 
-This is intentional. Before introducing a dependency, consider:
+This minimalism is intentional. Before introducing a dependency, consider:
 
 - download size
 - parse/execution cost on old devices
@@ -972,6 +974,9 @@ For large optional functionality, prefer an explicit optional/on-demand mechanis
 |-- sw.js                      service worker / offline app shell
 |-- manifest.webmanifest       PWA metadata
 |-- .htaccess                  DreamHost/Apache headers and caching
+|
+|-- vendor/
+|   `-- leaflet/              vendored Leaflet 1.9.4 for the station map
 |
 |-- icons/
 |   |-- icon.svg               source/vector application artwork
