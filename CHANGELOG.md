@@ -4,6 +4,8 @@
 
 ### Features
 
+- Added an optional same-origin PHP proxy (`api/stations.php`) that caches DGEG station lists per fuel type for one hour and answers radius searches, so clients download only nearby stations.
+
 - Added a Map tab to the Prices page showing matching stations and the user's location on an OpenStreetMap/Leaflet map.
 - Added a "Search this area" button on the map that re-runs the station search around the current map centre, and a centre-on-me button that recentres the map on the user's location.
 - Vendored Leaflet 1.9.4 locally (`vendor/leaflet/`); the List tab still works offline from cached results.

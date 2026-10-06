@@ -1,6 +1,6 @@
 # Security
 
-FuelLog intentionally has no authentication, server database or write API. User records remain local to the browser.
+FuelLog intentionally has no authentication, server database or write API. User records remain local to the browser. The only server-side code is the optional read-only station proxy `api/stations.php`; issues in it should be reported the same way.
 
 ## Reporting
 

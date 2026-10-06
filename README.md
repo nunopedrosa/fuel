@@ -4,9 +4,9 @@ FuelLog is a small, installable, **local-first fuel log Progressive Web App (PWA
 
 The application is designed around a simple rule: **personal vehicle and fill-up data belongs on the user's device, not on the web server**.
 
-FuelLog therefore needs no account, database, login, PHP backend, analytics service, cloud sync, or tracking infrastructure. DreamHost or GitHub Pages only serves the static application files. After the PWA application shell has been cached, normal fuel logging works offline and places almost no continuing load on the host.
+FuelLog therefore needs no account, database, login, analytics service, cloud sync, or tracking infrastructure. DreamHost or GitHub Pages only serves the static application files plus one optional same-origin PHP script (`api/stations.php`, see [Station proxy](#station-proxy)). After the PWA application shell has been cached, normal fuel logging works offline and places almost no continuing load on the host.
 
-Current Portuguese fuel-station prices are an optional online feature. They are requested directly by the user's browser from the public DGEG service only when the user explicitly asks to find stations.
+Current Portuguese fuel-station prices are an optional online feature. They are requested only when the user explicitly asks to find stations — via the same-origin station proxy when it is enabled in `config.js`, or directly by the user's browser from the public DGEG service when the proxy is disabled or unreachable.
 
 ---
 
@@ -109,7 +109,7 @@ For the selected vehicle FuelLog displays:
 - IndexedDB local database
 - no runtime JavaScript frameworks or third-party libraries
 - no build step
-- no application backend
+- no application backend (a single optional same-origin station-proxy script is the only server-side code)
 
 ---
 
@@ -142,7 +142,7 @@ FuelLog does **not** send the user's:
 
 back to the hosting server.
 
-The host normally sees only requests for static application files such as HTML, JavaScript, CSS, icons and the service worker.
+The host normally sees only requests for static application files such as HTML, JavaScript, CSS, icons and the service worker, plus POSTs to `api/stations.php` when the user runs a station search with the proxy enabled.
 
 ### No accounts or tracking
 
@@ -766,7 +766,13 @@ Normal fuel logging does not contact DGEG.
 
 FuelLog can ask the browser for location when distance/radius filtering is requested.
 
-Location permission belongs to the browser/operating system. FuelLog does not upload that location to its own hosting server.
+Location permission belongs to the browser/operating system. When the station proxy is enabled, the browser POSTs the location (rounded to about 100 m) to the site's own `api/stations.php`; the coordinates are never stored there. With the proxy disabled, the location stays in the browser and is used only for local distance calculations.
+
+## Station proxy
+
+`api/stations.php` is an optional, dependency-free PHP 7.4+ endpoint intended for the DreamHost deployment. It is enabled by default via `stationProxy` in `config.js`; set it to `null` for a purely static host such as GitHub Pages.
+
+The proxy fetches the full station list for a fuel type from DGEG at most once per hour, stores it in `api/cache/` as a 0.1° grid index, and answers `POST {fuel, lat, lon, radius}` queries with the stations inside the radius. Phones therefore download only nearby stations instead of a multi-megabyte nationwide response. It accepts only same-origin POST requests, is not an open relay (the upstream URL is fixed and the only parameters are fuel, coordinates and radius), and never logs or persists the request coordinates. If the proxy fails, the app warns and falls back to querying DGEG directly.
 
 ## Price accuracy
 
@@ -883,11 +889,11 @@ Deployment is simply a static-file upload.
 There is:
 
 - no build step
-- no PHP requirement
 - no SQL database
-- no server application
 - no scheduled job
 - no secret configuration
+
+`api/stations.php` requires PHP 7.4+, which DreamHost provides; the rest of the application needs no server runtime. For GitHub Pages (or any static-only host), set `stationProxy: null` in `config.js` and the app queries DGEG directly.
 
 ## `.htaccess`
 
@@ -897,7 +903,7 @@ The optional Apache modules are guarded so the application still works if a modu
 
 ## GitHub Pages
 
-Because FuelLog is static, GitHub Pages can also host it.
+Because FuelLog is otherwise static, GitHub Pages can also host it — with `stationProxy: null` in `config.js`, since Pages cannot run the optional PHP proxy.
 
 For the intended deployment, DreamHost can remain the canonical `fuel.trekm.com` site while GitHub serves as the public source repository.
 
@@ -974,6 +980,10 @@ For large optional functionality, prefer an explicit optional/on-demand mechanis
 |-- sw.js                      service worker / offline app shell
 |-- manifest.webmanifest       PWA metadata
 |-- .htaccess                  DreamHost/Apache headers and caching
+|
+|-- api/
+|   |-- stations.php           optional same-origin DGEG radius-search proxy
+|   `-- cache/                 server-side station grid-index cache (denied via .htaccess)
 |
 |-- vendor/
 |   `-- leaflet/              vendored Leaflet 1.9.4 for the station map
