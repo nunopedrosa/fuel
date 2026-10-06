@@ -5,9 +5,13 @@
 
 /* iOS 12 fallbacks: Safari on iPhone 6 has no flex-gap support and limited backdrop-filter support. */
 @supports not (gap: 1px) {
-  .brand>*+*,.top-actions>*+*,.section-head>*+*,.form-actions>*+*,.toolbar>*+*,.actions-inline>*+*,.switchline>*+*{margin-left:10px}
+  .brand>*+*,.top-actions>*+*,.section-head>*+*,.form-actions>*+*,.toolbar>*+*,.actions-inline>*+*,.switchline>*+*,.station-actions>*+*{margin-left:10px}
   .tabs>*+*{margin-left:6px}
   .list>*+*{margin-top:10px}
 }
 .topbar,.bottom-nav{-webkit-backdrop-filter:blur(18px)}
 @supports not (width: min(100%, 1100px)){.bottom-nav{width:100%;max-width:1100px}}
+
+.station-actions{display:flex;gap:8px;margin-top:8px;justify-content:flex-end;flex-wrap:wrap}
+a.btn{text-decoration:none;display:inline-block}
+.btn.go{background:#16a34a;color:#fff}
