@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0f766e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="FuelLog" />
+  <meta name="description" content="A private, local-first fuel log with Portuguese station prices." />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>FuelLog</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <button class="brand" data-route="dashboard" aria-label="FuelLog dashboard">
+        <img src="icons/icon.svg" alt="" />
+        <span>FuelLog</span>
+      </button>
+      <div class="top-actions">
+        <span id="offlineBadge" class="status-pill">Offline ready</span>
+        <button id="installBtn" class="btn ghost hidden">Install</button>
+      </div>
+    </header>
+
+    <main id="app" class="content" aria-live="polite"></main>
+
+    <nav class="bottom-nav" aria-label="Primary navigation">
+      <button data-route="dashboard" class="nav-item active"><span>⌂</span><small>Home</small></button>
+      <button data-route="add" class="nav-item"><span>＋</span><small>Fill-up</small></button>
+      <button data-route="history" class="nav-item"><span>≡</span><small>History</small></button>
+      <button data-route="prices" class="nav-item"><span>€</span><small>Prices</small></button>
+      <button data-route="settings" class="nav-item"><span>⚙</span><small>Settings</small></button>
+    </nav>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="config.js"></script>
+  <script src="db.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
