@@ -2,7 +2,7 @@ const CACHE = 'fuellog-v23-prices-sheet-nav';
 const ASSETS = [
   './',
   'index.html',
-  'styles.css?v=20',
+  'styles.css?v=21',
   'config.js',
   'db.js',
   'app.js',
