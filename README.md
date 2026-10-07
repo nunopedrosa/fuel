@@ -855,6 +855,20 @@ If a current cache exists, repeated searches reuse it instead of contacting the 
 
 If the network request fails and older cached data exists, FuelLog may use that cached response as a fallback and identifies stale results in the interface.
 
+## Prices map (offline)
+
+The Prices page uses a full-screen map with a bottom sheet for filters and results.
+
+- **Bundled low-zoom tiles** (`assets/map-tiles/`, z5–z7) ship with the app so a coarse map works offline after install.
+- **IndexedDB `mapTiles`** stores higher-zoom OpenStreetMap tiles fetched while online (LRU cap ~32 MB).
+- **`searchArchive:*` entries** in `priceCache` keep the last station searches (up to 20 snapshots, 7-day TTL, 500 stations each) plus `settings.lastPriceSearch` for reopening the Prices page offline.
+
+Regenerate bundled tiles after changing coverage:
+
+```bash
+node scripts/generate-low-zoom-tiles.mjs
+```
+
 ---
 
 # iPhone 6 / iOS 12 support
@@ -1148,7 +1162,17 @@ Key:
 key
 ```
 
-Stores timestamped external reference/search results so repeated provider requests can be avoided.
+Stores timestamped external reference/search results so repeated provider requests can be avoided. Keys prefixed with `searchArchive:` hold longer-lived station search snapshots for offline use.
+
+## `mapTiles`
+
+Key:
+
+```text
+z/x/y
+```
+
+Stores PNG blobs for map tiles fetched while online (LRU eviction, ~32 MB cap).
 
 ## `promos`
 

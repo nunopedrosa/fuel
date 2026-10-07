@@ -1,6 +1,6 @@
 # Compatibility
 
-FuelLog is intentionally written without a build step. The only runtime JavaScript dependency is a locally vendored copy of Leaflet 1.9.4 (`vendor/leaflet/`) used for the station map on the Prices page. Map tiles come from OpenStreetMap and require connectivity; the map is optional and the List tab continues to work offline from cached results.
+FuelLog is intentionally written without a build step. The only runtime JavaScript dependency is a locally vendored copy of Leaflet 1.9.4 (`vendor/leaflet/`) used for the station map on the Prices page. Low-zoom map tiles are bundled; higher zoom uses OpenStreetMap when online and may be cached in IndexedDB. The Prices bottom sheet and last search archive continue to work offline from cached results.
 
 ## Minimum target
 

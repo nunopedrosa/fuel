@@ -9,7 +9,7 @@ FuelLog is local-first.
   - Portugal (DGEG) / Spain (Minetur): with the station proxy enabled, the fuel choice and coordinates rounded to about 100 m are sent via POST to the site's own `api/stations.php` — not in the URL, so they do not appear in access logs — and are never stored there. In direct mode (proxy disabled/unreachable), only the fuel type and, when required, a region/district id are sent to the public API; coordinates stay on the device and are used only for local distance filtering.
   - France (data.economie.gouv.fr): the fuel choice and coordinates rounded to about 100 m are sent inside the radius query; there is no proxy path.
   - Belgium (FPS Economy/Statbel) and Netherlands (CBS): nothing but the request itself is sent; the responses are national reference prices.
-- When the user opens the Map tab on the Prices page, map tile images are requested from `tile.openstreetmap.org`. Loading tiles necessarily reveals the viewed map area and the user's IP address to OpenStreetMap's tile service. No location is stored.
+- On the Prices page, the map is always visible. While online, high-zoom tiles may be requested from `tile.openstreetmap.org` (revealing the viewed area and IP to OSM). Low-zoom tiles are bundled in the app; additional tiles viewed online may be stored locally in IndexedDB (`mapTiles`, capped) for offline reuse. Station search snapshots may be kept in IndexedDB for offline display. Map centre preference is stored in settings only on the device.
 - Exported JSON/CSV files are created locally in the browser. Imported files are read locally.
 
 ## User responsibility
