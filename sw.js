@@ -1,4 +1,4 @@
-const CACHE = 'fuellog-v19-prices-sheet';
+const CACHE = 'fuellog-v20-carto-tiles';
 const ASSETS = [
   './',
   'index.html',

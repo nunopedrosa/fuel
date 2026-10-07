@@ -1,15 +1,17 @@
-// Hybrid offline map tiles: bundled low-zoom PNGs + IndexedDB LRU cache for OSM tiles.
+// Hybrid offline map tiles: bundled low-zoom PNGs + IndexedDB LRU cache (online via CARTO, not OSM.org).
 window.FuelLogOfflineTiles = (function () {
-  var OSM = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  // CARTO raster basemap — OK for in-app display; do not bulk-scrape (use bundled tiles offline).
+  var ONLINE = 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
   var BUNDLED_MAX_Z = 8;
-  var ATTR_ONLINE = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-  var ATTR_OFFLINE = '&copy; OSM (offline / low resolution)';
+  var CACHE_PREFIX = 'carto-v1:';
+  var ATTR_ONLINE = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+  var ATTR_OFFLINE = '&copy; OSM data (bundled low resolution)';
 
   var manifest = null;
   var manifestPromise = null;
 
   function tileKey(z, x, y) {
-    return z + '/' + x + '/' + y;
+    return CACHE_PREFIX + z + '/' + x + '/' + y;
   }
 
   function bundledPath(country, z, x, y) {
@@ -76,28 +78,46 @@ window.FuelLogOfflineTiles = (function () {
     }
   }
 
+  function onlineTileUrl(z, x, y) {
+    var r = '';
+    if (typeof L !== 'undefined' && L.Browser && L.Browser.retina) r = '@2x';
+    return ONLINE.replace('{z}', z).replace('{x}', x).replace('{y}', y).replace('{r}', r);
+  }
+
   function fetchOnlineTile(z, x, y) {
-    var url = OSM.replace('{z}', z).replace('{x}', x).replace('{y}', y);
-    return fetch(url, { mode: 'cors', credentials: 'omit', cache: 'default' }).then(function (r) {
-      if (!r.ok) throw new Error('tile ' + r.status);
-      return r.blob();
+    var url = onlineTileUrl(z, x, y);
+    return fetch(url, { mode: 'cors', credentials: 'omit', cache: 'default' }).then(function (res) {
+      if (!res.ok) throw new Error('tile ' + res.status);
+      return res.blob();
+    }).then(function (blob) {
+      if (!blob || blob.size < 800) throw new Error('tile too small');
+      return blob;
     });
   }
 
   function resolveTile(country, z, x, y, preferOnline) {
     var key = tileKey(z, x, y);
-    return FuelDB.getMapTile(key).then(function (cached) {
-      if (cached) return { src: blobToObjectUrl(cached), revocable: true, offline: true };
-      var burl = bundledUrl(country, z, x, y);
-      if (burl && z <= BUNDLED_MAX_Z) return { src: burl, revocable: false, offline: true };
-      if (preferOnline && navigator.onLine) {
-        return fetchOnlineTile(z, x, y).then(function (blob) {
-          FuelDB.putMapTile(key, blob).catch(function () {});
-          return { src: blobToObjectUrl(blob), revocable: true, offline: false };
-        });
-      }
-      if (z > BUNDLED_MAX_Z && burl) return { src: burl, revocable: false, offline: true };
-      return { src: getPlaceholder(), revocable: false, offline: true };
+    return loadManifest().then(function () {
+      return FuelDB.getMapTile(key).then(function (cached) {
+        if (cached && cached.size >= 800) {
+          return { src: blobToObjectUrl(cached), revocable: true, offline: true };
+        }
+        var burl = bundledUrl(country, z, x, y);
+        if (burl && z <= BUNDLED_MAX_Z) {
+          return { src: burl, revocable: false, offline: true };
+        }
+        if (preferOnline && navigator.onLine) {
+          return fetchOnlineTile(z, x, y).then(function (blob) {
+            FuelDB.putMapTile(key, blob).catch(function () {});
+            return { src: blobToObjectUrl(blob), revocable: true, offline: false };
+          }).catch(function () {
+            if (burl) return { src: burl, revocable: false, offline: true };
+            return { src: getPlaceholder(), revocable: false, offline: true };
+          });
+        }
+        if (burl) return { src: burl, revocable: false, offline: true };
+        return { src: getPlaceholder(), revocable: false, offline: true };
+      });
     }).catch(function () {
       return { src: getPlaceholder(), revocable: false, offline: true };
     });
@@ -113,7 +133,6 @@ window.FuelLogOfflineTiles = (function () {
         var tile = document.createElement('img');
         tile.alt = '';
         tile.setAttribute('role', 'presentation');
-        var self = this;
         resolveTile(country, coords.z, coords.x, coords.y, true).then(function (res) {
           tile.onload = function () { done(null, tile); };
           tile.onerror = function () {
@@ -135,17 +154,21 @@ window.FuelLogOfflineTiles = (function () {
       }
     });
 
-    var layer = new Layer(OSM, {
+    var layer = new Layer(ONLINE, {
       maxZoom: 19,
       minZoom: 3,
       attribution: ATTR_ONLINE,
       crossOrigin: true
     });
 
+    loadManifest().then(function () {
+      if (layer._map && layer.redraw) layer.redraw();
+    });
+
     function syncAttribution() {
       var low = offlineMode || !navigator.onLine;
       layer.options.attribution = low ? ATTR_OFFLINE : ATTR_ONLINE;
-      if (layer._map) layer._map.attributionControl.setPrefix(false);
+      if (layer._map && layer._map.attributionControl) layer._map.attributionControl.setPrefix(false);
     }
 
     window.addEventListener('online', syncAttribution);
@@ -153,7 +176,10 @@ window.FuelLogOfflineTiles = (function () {
 
     return {
       layer: layer,
-      setCountry: function (cc) { country = cc || 'PT'; },
+      setCountry: function (cc) {
+        country = cc || 'PT';
+        if (layer.redraw) layer.redraw();
+      },
       destroy: function () {
         window.removeEventListener('online', syncAttribution);
       },

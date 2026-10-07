@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Downloads low-zoom OSM tiles for offline use. Run from repo root:
+ * Downloads low-zoom CARTO/OSM basemap tiles for offline bundles. Run from repo root:
  *   node scripts/generate-low-zoom-tiles.mjs
- * Respects OSM tile usage: low zoom only, one-time build artifact.
+ * Do not point live app traffic at tile.openstreetmap.org — see js/prices/offline-tiles.js.
  */
 import fs from 'fs';
 import path from 'path';
@@ -52,9 +52,9 @@ function sleep(ms) {
 }
 
 async function downloadTile(z, x, y, dest) {
-  const url = `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
+  const url = `https://basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png`;
   const res = await fetch(url, {
-    headers: { 'User-Agent': 'FuelLog/1.0 (offline bundle generator; contact: local dev)' }
+    headers: { 'User-Agent': 'FuelLog/1.0 (one-time offline bundle build)' }
   });
   if (!res.ok) throw new Error(`${url} → ${res.status}`);
   const buf = Buffer.from(await res.arrayBuffer());

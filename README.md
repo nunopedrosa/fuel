@@ -102,7 +102,7 @@ For the selected vehicle FuelLog displays:
 - optional device geolocation
 - radius filtering when location is available
 - sorting by price and then distance
-- optional map view of stations and the user's location (OpenStreetMap tiles)
+- optional map view of stations and the user's location (CARTO/OSM basemap tiles)
 - "search this area" around the current map centre
 - on-device result caching
 - reduced-memory search path for iPhone 6 / iOS 12
@@ -860,7 +860,7 @@ If the network request fails and older cached data exists, FuelLog may use that 
 The Prices page uses a full-screen map with a bottom sheet for filters and results.
 
 - **Bundled low-zoom tiles** (`assets/map-tiles/`, z5–z7) ship with the app so a coarse map works offline after install.
-- **IndexedDB `mapTiles`** stores higher-zoom OpenStreetMap tiles fetched while online (LRU cap ~32 MB).
+- **IndexedDB `mapTiles`** stores higher-zoom CARTO basemap tiles fetched while online (LRU cap ~32 MB). Live map traffic does not use `tile.openstreetmap.org`.
 - **`searchArchive:*` entries** in `priceCache` keep the last station searches (up to 20 snapshots, 7-day TTL, 500 stations each) plus `settings.lastPriceSearch` for reopening the Prices page offline.
 
 Regenerate bundled tiles after changing coverage:
