@@ -66,6 +66,7 @@ For the selected vehicle FuelLog displays:
 - total fuel logged
 - total fuel spend
 - cost per kilometre
+- Fill analysis charts (L/100 km between full tanks, and €/L over time) when enough data exists
 - recent fill-ups
 
 ### History
@@ -86,8 +87,9 @@ For the selected vehicle FuelLog displays:
 - delimited TXT import
 - English and Portuguese column-name aliases
 - decimal point and decimal comma support
-- merge or replace import modes
+- merge or replace import modes (in-app dialog)
 - basic duplicate avoidance when importing generic records
+- in-app confirmation dialogs for deletes and import mode (no native browser prompts)
 
 ### Fuel prices
 
@@ -95,7 +97,7 @@ For the selected vehicle FuelLog displays:
 - canonical fuel catalogue with multilingual name matching
 - source provenance and staleness labels on every price
 - your own fill-up history surfaced as a private local price source ("You paid … here")
-- "Log fill-up here" from a station card or map popup
+- "Add fill-up" from a station card or map popup
 - user-defined brand promos: per-litre or per-fill discounts that show an effective price on matching stations and re-sort results by effective price
 - optional device geolocation
 - radius filtering when location is available

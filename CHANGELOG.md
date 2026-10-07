@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### UI
+
+- Topbar page titles now match bottom navigation (`Edit fill-up` when editing).
+- Standardized fill-up copy to Add / Save / Update; station and map actions say Add fill-up.
+- Replaced native confirm/alert with in-app dialogs.
+- Bundled Inter locally; added `--go` token for Maps-like navigation buttons.
+- Restored Home Fill analysis charts (L/100 km and €/L).
+
 ### Features
 
 - Added an optional same-origin PHP proxy (`api/stations.php`) that caches DGEG station lists per fuel type for one hour and answers radius searches, so clients download only nearby stations.
@@ -13,7 +21,7 @@
 - Added a multi-country fuel-price provider architecture: station prices for Portugal (DGEG), Spain (Minetur/MITECO) and France (data.economie.gouv.fr); official maximum prices for Belgium (FPS Economy/Statbel) and national averages for the Netherlands (CBS).
 - Added a canonical fuel catalogue (`FuelLogFuels`) with multilingual name matching, plus a one-time data migration that tags vehicles and fill-ups with canonical fuel ids.
 - Added per-price provenance (provider, price type, source update time) and stale-data labels.
-- Added the user's own fill-up history as a private local price source ("You paid … here") and a "Log fill-up" action on station cards and map popups.
+- Added the user's own fill-up history as a private local price source ("You paid … here") and an "Add fill-up" action on station cards and map popups.
 - The station proxy now also serves the Spanish nationwide dataset (~10 MB, refreshed hourly server-side).
 - Added user-defined brand promos (Settings → Brand promos): per-litre or per-fill discounts matched to a station's brand. Matching stations show an effective price with the original struck through plus a promo badge, and results are sorted by effective price; per-fill discounts are converted using a configurable typical fill size. Promos are stored in a new `promos` IndexedDB store (schema v2) and included in JSON backups.
 - Added a floating envelope suggestion button (top right) that opens a pre-addressed email to the developer with the current page already filled in; it can be hidden in Settings → Feedback.
