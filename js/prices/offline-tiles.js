@@ -187,11 +187,15 @@ window.FuelLogOfflineTiles = (function () {
       }
     });
 
+    var legacyIos = /iP(hone|od|ad)/.test(navigator.userAgent) && (function () {
+      var m = navigator.userAgent.match(/OS (\d+)_/);
+      return m && Number(m[1]) < 13;
+    }());
     var layer = new Layer('', {
       maxZoom: provider(onlineProviderId).maxZoom,
       minZoom: 3,
       attribution: provider(onlineProviderId).attribution,
-      crossOrigin: true
+      crossOrigin: legacyIos ? false : true
     });
 
     function applyProviderUi() {
