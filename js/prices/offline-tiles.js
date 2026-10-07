@@ -1,17 +1,49 @@
-// Hybrid offline map tiles: bundled low-zoom PNGs + IndexedDB LRU cache (online via CARTO, not OSM.org).
+// Hybrid offline map tiles: bundled low-zoom PNGs + IndexedDB LRU cache (online provider selectable).
 window.FuelLogOfflineTiles = (function () {
-  // CARTO raster basemap — OK for in-app display; do not bulk-scrape (use bundled tiles offline).
-  var ONLINE = 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
   var BUNDLED_MAX_Z = 8;
-  var CACHE_PREFIX = 'carto-v1:';
-  var ATTR_ONLINE = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
   var ATTR_OFFLINE = '&copy; OSM data (bundled low resolution)';
 
+  var PROVIDERS = {
+    opentopomap: {
+      id: 'opentopomap',
+      label: 'Terrain (OpenTopoMap)',
+      maxZoom: 17,
+      attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, SRTM | Style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
+      tileUrl: function (z, x, y) {
+        var sub = ['a', 'b', 'c'][(x + y + z) % 3];
+        return 'https://' + sub + '.tile.opentopomap.org/' + z + '/' + x + '/' + y + '.png';
+      }
+    },
+    'osm-de': {
+      id: 'osm-de',
+      label: 'Streets (OpenStreetMap)',
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · <a href="https://openstreetmap.de">openstreetmap.de</a>',
+      tileUrl: function (z, x, y) {
+        return 'https://tile.openstreetmap.de/' + z + '/' + x + '/' + y + '.png';
+      }
+    },
+    'osm-org': {
+      id: 'osm-org',
+      label: 'Streets (osm.org)',
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      tileUrl: function (z, x, y) {
+        return 'https://tile.openstreetmap.org/' + z + '/' + x + '/' + y + '.png';
+      }
+    }
+  };
+
+  var DEFAULT_PROVIDER = 'opentopomap';
   var manifest = null;
   var manifestPromise = null;
 
-  function tileKey(z, x, y) {
-    return CACHE_PREFIX + z + '/' + x + '/' + y;
+  function provider(id) {
+    return PROVIDERS[id] || PROVIDERS[DEFAULT_PROVIDER];
+  }
+
+  function tileKey(providerId, z, x, y) {
+    return 'online:' + providerId + ':' + z + '/' + x + '/' + y;
   }
 
   function bundledPath(country, z, x, y) {
@@ -32,8 +64,7 @@ window.FuelLogOfflineTiles = (function () {
     if (!manifest || !manifest.tiles) return false;
     var id = country + ':' + z + '/' + x + '/' + y;
     if (manifest.tiles.indexOf(id) >= 0) return true;
-    var eu = 'EU:' + z + '/' + x + '/' + y;
-    return manifest.tiles.indexOf(eu) >= 0;
+    return manifest.tiles.indexOf('EU:' + z + '/' + x + '/' + y) >= 0;
   }
 
   function bundledUrl(country, z, x, y) {
@@ -78,14 +109,9 @@ window.FuelLogOfflineTiles = (function () {
     }
   }
 
-  function onlineTileUrl(z, x, y) {
-    var r = '';
-    if (typeof L !== 'undefined' && L.Browser && L.Browser.retina) r = '@2x';
-    return ONLINE.replace('{z}', z).replace('{x}', x).replace('{y}', y).replace('{r}', r);
-  }
-
-  function fetchOnlineTile(z, x, y) {
-    var url = onlineTileUrl(z, x, y);
+  function fetchOnlineTile(prov, z, x, y) {
+    if (z > prov.maxZoom) throw new Error('zoom capped');
+    var url = prov.tileUrl(z, x, y);
     return fetch(url, { mode: 'cors', credentials: 'omit', cache: 'default' }).then(function (res) {
       if (!res.ok) throw new Error('tile ' + res.status);
       return res.blob();
@@ -95,45 +121,52 @@ window.FuelLogOfflineTiles = (function () {
     });
   }
 
-  function resolveTile(country, z, x, y, preferOnline) {
-    var key = tileKey(z, x, y);
-    return loadManifest().then(function () {
-      return FuelDB.getMapTile(key).then(function (cached) {
-        if (cached && cached.size >= 800) {
-          return { src: blobToObjectUrl(cached), revocable: true, offline: true };
-        }
-        var burl = bundledUrl(country, z, x, y);
-        if (burl && z <= BUNDLED_MAX_Z) {
-          return { src: burl, revocable: false, offline: true };
-        }
-        if (preferOnline && navigator.onLine) {
-          return fetchOnlineTile(z, x, y).then(function (blob) {
-            FuelDB.putMapTile(key, blob).catch(function () {});
-            return { src: blobToObjectUrl(blob), revocable: true, offline: false };
-          }).catch(function () {
-            if (burl) return { src: burl, revocable: false, offline: true };
-            return { src: getPlaceholder(), revocable: false, offline: true };
-          });
-        }
-        if (burl) return { src: burl, revocable: false, offline: true };
-        return { src: getPlaceholder(), revocable: false, offline: true };
-      });
-    }).catch(function () {
-      return { src: getPlaceholder(), revocable: false, offline: true };
-    });
+  function useBundledWhenOnline(prov) {
+    return prov.id === DEFAULT_PROVIDER;
   }
 
   function createLayer(options) {
     options = options || {};
     var country = options.countryCode || 'PT';
+    var onlineProviderId = options.onlineProviderId || DEFAULT_PROVIDER;
     var offlineMode = false;
+
+    function resolveTile(z, x, y, preferOnline) {
+      var prov = provider(onlineProviderId);
+      var key = tileKey(prov.id, z, x, y);
+      return loadManifest().then(function () {
+        return FuelDB.getMapTile(key).then(function (cached) {
+          if (cached && cached.size >= 800) {
+            return { src: blobToObjectUrl(cached), revocable: true, offline: true };
+          }
+          var burl = bundledUrl(country, z, x, y);
+          var useBundled = burl && z <= BUNDLED_MAX_Z && (!preferOnline || !navigator.onLine || useBundledWhenOnline(prov));
+          if (useBundled) {
+            return { src: burl, revocable: false, offline: true };
+          }
+          if (preferOnline && navigator.onLine) {
+            return fetchOnlineTile(prov, z, x, y).then(function (blob) {
+              FuelDB.putMapTile(key, blob).catch(function () {});
+              return { src: blobToObjectUrl(blob), revocable: true, offline: false };
+            }).catch(function () {
+              if (burl) return { src: burl, revocable: false, offline: true };
+              return { src: getPlaceholder(), revocable: false, offline: true };
+            });
+          }
+          if (burl) return { src: burl, revocable: false, offline: true };
+          return { src: getPlaceholder(), revocable: false, offline: true };
+        });
+      }).catch(function () {
+        return { src: getPlaceholder(), revocable: false, offline: true };
+      });
+    }
 
     var Layer = L.TileLayer.extend({
       createTile: function (coords, done) {
         var tile = document.createElement('img');
         tile.alt = '';
         tile.setAttribute('role', 'presentation');
-        resolveTile(country, coords.z, coords.x, coords.y, true).then(function (res) {
+        resolveTile(coords.z, coords.x, coords.y, true).then(function (res) {
           tile.onload = function () { done(null, tile); };
           tile.onerror = function () {
             tile.src = getPlaceholder();
@@ -154,25 +187,34 @@ window.FuelLogOfflineTiles = (function () {
       }
     });
 
-    var layer = new Layer(ONLINE, {
-      maxZoom: 19,
+    var layer = new Layer('', {
+      maxZoom: provider(onlineProviderId).maxZoom,
       minZoom: 3,
-      attribution: ATTR_ONLINE,
+      attribution: provider(onlineProviderId).attribution,
       crossOrigin: true
     });
 
-    loadManifest().then(function () {
-      if (layer._map && layer.redraw) layer.redraw();
-    });
+    function applyProviderUi() {
+      var prov = provider(onlineProviderId);
+      layer.options.maxZoom = prov.maxZoom;
+      layer.options.attribution = (!navigator.onLine || offlineMode) ? ATTR_OFFLINE : prov.attribution;
+      if (layer._map) {
+        layer._map.setMaxZoom(prov.maxZoom);
+        if (layer._map.getZoom() > prov.maxZoom) layer._map.setZoom(prov.maxZoom);
+        if (layer._map.attributionControl) layer._map.attributionControl.setPrefix(false);
+        if (layer.redraw) layer.redraw();
+      }
+    }
+
+    loadManifest().then(function () { applyProviderUi(); });
 
     function syncAttribution() {
-      var low = offlineMode || !navigator.onLine;
-      layer.options.attribution = low ? ATTR_OFFLINE : ATTR_ONLINE;
-      if (layer._map && layer._map.attributionControl) layer._map.attributionControl.setPrefix(false);
+      offlineMode = !navigator.onLine;
+      applyProviderUi();
     }
 
     window.addEventListener('online', syncAttribution);
-    window.addEventListener('offline', function () { offlineMode = true; syncAttribution(); });
+    window.addEventListener('offline', syncAttribution);
 
     return {
       layer: layer,
@@ -180,16 +222,25 @@ window.FuelLogOfflineTiles = (function () {
         country = cc || 'PT';
         if (layer.redraw) layer.redraw();
       },
+      setOnlineProvider: function (id) {
+        if (!PROVIDERS[id]) id = DEFAULT_PROVIDER;
+        onlineProviderId = id;
+        offlineMode = false;
+        applyProviderUi();
+      },
+      getOnlineProvider: function () { return onlineProviderId; },
       destroy: function () {
         window.removeEventListener('online', syncAttribution);
+        window.removeEventListener('offline', syncAttribution);
       },
       loadManifest: loadManifest
     };
   }
 
-  function prefetchAround(center, zoom) {
+  function prefetchAround(center, zoom, providerId) {
     if (!center || !navigator.onLine) return;
-    var z = Math.min(Math.max(Math.round(zoom || 12), 9), 14);
+    var prov = provider(providerId || DEFAULT_PROVIDER);
+    var z = Math.min(Math.max(Math.round(zoom || 12), 9), prov.maxZoom);
     var n = 1;
     var lat = center.lat;
     var lon = center.lon;
@@ -199,7 +250,11 @@ window.FuelLogOfflineTiles = (function () {
     var run = function () {
       for (var dx = -n; dx <= n; dx++) {
         for (var dy = -n; dy <= n; dy++) {
-          resolveTile('PT', z, x + dx, y + dy, true).catch(function () {});
+          (function (tx, ty) {
+            fetchOnlineTile(prov, z, tx, ty).then(function (blob) {
+              FuelDB.putMapTile(tileKey(prov.id, z, tx, ty), blob).catch(function () {});
+            }).catch(function () {});
+          })(x + dx, y + dy);
         }
       }
     };
@@ -207,10 +262,19 @@ window.FuelLogOfflineTiles = (function () {
     else setTimeout(run, 500);
   }
 
+  function listProviders() {
+    return Object.keys(PROVIDERS).map(function (k) {
+      var p = PROVIDERS[k];
+      return { id: p.id, label: p.label };
+    });
+  }
+
   return {
     createLayer: createLayer,
     loadManifest: loadManifest,
     prefetchAround: prefetchAround,
+    listProviders: listProviders,
+    defaultProvider: DEFAULT_PROVIDER,
     BUNDLED_MAX_Z: BUNDLED_MAX_Z
   };
 })();

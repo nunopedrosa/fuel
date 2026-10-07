@@ -1,4 +1,4 @@
-const CACHE = 'fuellog-v20-carto-tiles';
+const CACHE = 'fuellog-v21-opentopomap';
 const ASSETS = [
   './',
   'index.html',

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Downloads low-zoom CARTO/OSM basemap tiles for offline bundles. Run from repo root:
+ * Downloads low-zoom OpenTopoMap tiles for offline bundles. Run from repo root:
  *   node scripts/generate-low-zoom-tiles.mjs
  * Do not point live app traffic at tile.openstreetmap.org — see js/prices/offline-tiles.js.
  */
@@ -52,7 +52,8 @@ function sleep(ms) {
 }
 
 async function downloadTile(z, x, y, dest) {
-  const url = `https://basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png`;
+  const sub = ['a', 'b', 'c'][(x + y + z) % 3];
+  const url = `https://${sub}.tile.opentopomap.org/${z}/${x}/${y}.png`;
   const res = await fetch(url, {
     headers: { 'User-Agent': 'FuelLog/1.0 (one-time offline bundle build)' }
   });
