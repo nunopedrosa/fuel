@@ -1,8 +1,8 @@
-const CACHE = 'fuellog-v28-fuel-names';
+const CACHE = 'fuellog-v29-station-sheet';
 const ASSETS = [
   './',
   'index.html',
-  'styles.css?v=31',
+  'styles.css?v=32',
   'config.js',
   'db.js',
   'app.js',
