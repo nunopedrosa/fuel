@@ -18,10 +18,13 @@
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <button class="brand" data-route="dashboard" aria-label="FuelLog dashboard">
-        <img src="icons/icon.svg" alt="" />
-        <span>FuelLog</span>
-      </button>
+      <div class="top-left">
+        <button class="brand" data-route="dashboard" aria-label="FuelLog dashboard">
+          <img src="icons/icon.svg" alt="" />
+          <span>FuelLog</span>
+        </button>
+        <span id="pageKicker" class="kicker"></span>
+      </div>
       <div class="top-actions">
         <span id="offlineBadge" class="status-pill">Offline ready</span>
         <button id="installBtn" class="btn ghost hidden">Install</button>
