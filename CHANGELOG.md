@@ -15,6 +15,7 @@
 - Added per-price provenance (provider, price type, source update time) and stale-data labels.
 - Added the user's own fill-up history as a private local price source ("You paid … here") and a "Log fill-up" action on station cards and map popups.
 - The station proxy now also serves the Spanish nationwide dataset (~10 MB, refreshed hourly server-side).
+- Added user-defined brand promos (Settings → Brand promos): per-litre or per-fill discounts matched to a station's brand. Matching stations show an effective price with the original struck through plus a promo badge, and results are sorted by effective price; per-fill discounts are converted using a configurable typical fill size. Promos are stored in a new `promos` IndexedDB store (schema v2) and included in JSON backups.
 
 ### Documentation
 

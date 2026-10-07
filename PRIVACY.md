@@ -2,7 +2,7 @@
 
 FuelLog is local-first.
 
-- Vehicle details, fill-ups, notes, preferences and cached station-price responses are stored in the browser's IndexedDB on the user's device.
+- Vehicle details, fill-ups, notes, preferences, user-defined brand promos and cached station-price responses are stored in the browser's IndexedDB on the user's device.
 - FuelLog has no application database and does not send those records to `fuel.trekm.com`.
 - There are no analytics, advertising SDKs, trackers, accounts or cookies in the application.
 - When the user explicitly opens the price finder and requests prices, the browser contacts a public fuel-price provider. What leaves the device per provider:

@@ -96,6 +96,7 @@ For the selected vehicle FuelLog displays:
 - source provenance and staleness labels on every price
 - your own fill-up history surfaced as a private local price source ("You paid … here")
 - "Log fill-up here" from a station card or map popup
+- user-defined brand promos: per-litre or per-fill discounts that show an effective price on matching stations and re-sort results by effective price
 - optional device geolocation
 - radius filtering when location is available
 - sorting by price and then distance
@@ -126,6 +127,7 @@ The following information is stored in **IndexedDB on the user's browser/device*
 - vehicles
 - fuel records
 - application settings
+- user-defined brand promos
 - cached provider fuel types/regions
 - cached provider station searches and reference prices
 
@@ -139,6 +141,7 @@ FuelLog does **not** send the user's:
 - fuel history
 - costs
 - notes
+- brand promos
 - imported files
 - exported backups
 
@@ -184,6 +187,7 @@ See [PRIVACY.md](PRIVACY.md) for the focused privacy statement.
              | vehicles           |
              | fill-ups           |
              | settings           |
+             | promos             |
              | price cache        |
              +--------------------+
                         |
@@ -261,6 +265,22 @@ FuelLog supports more than one vehicle. Each vehicle has its own identifier and 
 One vehicle is selected as the active vehicle for the dashboard and new-entry defaults.
 
 A generic data import can create vehicles automatically when imported rows contain vehicle names that are not yet present.
+
+## Brand promos
+
+Fuel stations sometimes run brand-level promotions. In **Settings → Brand promos** you can record:
+
+- the brand name (matched exactly against the station's brand, ignoring case and accents)
+- an optional country restriction
+- a discount type: **€ per litre off** or **€ per fill off**
+- the amount
+- an optional fuel restriction and an optional end date
+
+Matching stations in the price list and on the map then show the **effective price** (the listed price minus the promo) together with the original price and a promo badge, and results are sorted by effective price. Per-fill discounts are converted to an approximate per-litre value using the configurable *Typical fill* size (default 40 L) for display and sorting.
+
+Promos match on the station's `brand` field only. Providers that do not report a brand (France) never match; in Spain the provider uses the station name as the brand, so name-based brands work there.
+
+Starting a fill-up from a station card prefills the discounted price for per-litre promos; for per-fill promos the listed price is prefilled and a note reminds you to subtract the discount from the total.
 
 ## Adding a fill-up
 
@@ -672,7 +692,7 @@ A FuelLog backup has this general structure:
 ```json
 {
   "format": "FuelLog",
-  "version": 1,
+  "version": 3,
   "exportedAt": "2026-10-06T18:00:00.000Z",
   "vehicles": [
     {
@@ -697,6 +717,18 @@ A FuelLog backup has this general structure:
       "station": "Example station",
       "fuelType": "Gasóleo simples",
       "fullTank": true,
+      "notes": ""
+    }
+  ],
+  "promos": [
+    {
+      "id": "stable-id",
+      "brand": "Example brand",
+      "country": "PT",
+      "type": "litre",
+      "amount": 0.05,
+      "fuelId": "",
+      "validUntil": "",
       "notes": ""
     }
   ],
@@ -989,6 +1021,7 @@ For large optional functionality, prefer an explicit optional/on-demand mechanis
 |   `-- prices/               fuel catalogue and provider registry
 |       |-- fuels.js          canonical fuel ids and multilingual name matching
 |       |-- providers.js      provider registry and shared helpers
+|       |-- promos.js         brand-promo matching and effective-price helpers
 |       `-- providers/        pt-dgeg, es-minetur, fr-government, be-fps, nl-cbs
 |
 |-- docs/
@@ -1029,10 +1062,10 @@ FuelLogDB
 Current database version:
 
 ```text
-1
+2
 ```
 
-It contains four object stores.
+It contains five object stores.
 
 ## `vehicles`
 
@@ -1108,6 +1141,33 @@ key
 ```
 
 Stores timestamped external reference/search results so repeated provider requests can be avoided.
+
+## `promos`
+
+Key:
+
+```text
+id
+```
+
+Stores user-defined brand promotions. Typical object:
+
+```json
+{
+  "id": "stable-id",
+  "brand": "Example brand",
+  "country": "PT",
+  "type": "litre",
+  "amount": 0.05,
+  "fuelId": "DIESEL_B7",
+  "validUntil": "2026-12-31",
+  "notes": "",
+  "active": true,
+  "updatedAt": "2026-10-07T08:00:00.000Z"
+}
+```
+
+`type` is `litre` (discount per litre) or `fill` (fixed discount per fill-up). Empty `country`/`fuelId` mean the promo applies to all countries/fuels.
 
 ---
 

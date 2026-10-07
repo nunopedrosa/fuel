@@ -1,5 +1,5 @@
 const FuelDB = (() => {
-  const DB_NAME='FuelLogDB', DB_VERSION=1;
+  const DB_NAME='FuelLogDB', DB_VERSION=2;
   let db;
   const open=()=>new Promise((resolve,reject)=>{
     const req=indexedDB.open(DB_NAME,DB_VERSION);
@@ -9,6 +9,7 @@ const FuelDB = (() => {
       if(!d.objectStoreNames.contains('fillups')) { const s=d.createObjectStore('fillups',{keyPath:'id'}); s.createIndex('date','date'); s.createIndex('vehicleId','vehicleId'); }
       if(!d.objectStoreNames.contains('settings')) d.createObjectStore('settings',{keyPath:'key'});
       if(!d.objectStoreNames.contains('priceCache')) d.createObjectStore('priceCache',{keyPath:'key'});
+      if(!d.objectStoreNames.contains('promos')) d.createObjectStore('promos',{keyPath:'id'});
     };
     req.onsuccess=()=>{db=req.result;resolve(db)}; req.onerror=()=>reject(req.error);
   });

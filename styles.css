@@ -15,3 +15,5 @@
 .station-actions{display:flex;gap:8px;margin-top:8px;justify-content:flex-end;flex-wrap:wrap}
 a.btn{text-decoration:none;display:inline-block}
 .btn.go{background:#16a34a;color:#fff}
+.promo{color:#92400e;background:#fef3c7;border-radius:6px;padding:1px 6px;display:inline-block;margin-top:3px}
+.promo-was{text-decoration:line-through}
