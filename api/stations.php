@@ -55,7 +55,7 @@ if ($lat === false || $lat < -90 || $lat > 90) fail(400, 'Invalid lat');
 if ($lon === false || $lon < -180 || $lon > 180) fail(400, 'Invalid lon');
 $radius = isset($in['radius']) ? filter_var($in['radius'], FILTER_VALIDATE_FLOAT) : false;
 if ($radius === false) fail(400, 'Invalid radius');
-$radius = max(1, min(100, $radius));
+$radius = max(1, min(1000, $radius));
 
 function cacheDir() {
     $d = __DIR__ . '/cache';
