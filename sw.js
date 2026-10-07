@@ -1,4 +1,4 @@
-const CACHE = 'fuellog-v26-station-sheet';
+const CACHE = 'fuellog-v28-fuel-names';
 const ASSETS = [
   './',
   'index.html',

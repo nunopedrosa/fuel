@@ -178,4 +178,11 @@ var plain = P.effective(station(1.7, 'Repsol'), null, [promo({ amount: 0.05 })],
 assert.equal(plain.price, 1.7);
 assert.equal(plain.perLitre, 0);
 
+// Promos match canonical fuel ids from price search, not UI labels.
+var dieselPromo = promo({ id: 'd', fuelId: 'DIESEL_B7', amount: 0.05 });
+var dieselSearch = P.offers(station(1.7), 'DIESEL_B7', [dieselPromo], 40);
+assert(dieselSearch.winner, 'diesel promo applies for DIESEL_B7 search');
+var petrolSearch = P.offers(station(1.7), 'PETROL_95', [dieselPromo], 40);
+assert.equal(petrolSearch.winner, null, 'diesel promo ignored for PETROL_95 search');
+
 console.log('promos ok');

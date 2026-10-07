@@ -27,6 +27,40 @@ window.FuelLogFuels = (function () {
     for (var i = 0; i < LIST.length; i++) if (LIST[i].id === id) return LIST[i].label;
     return id || '';
   }
+  function known(id) {
+    for (var i = 0; i < LIST.length; i++) if (LIST[i].id === id) return LIST[i].label;
+    return '';
+  }
+  function present(id, text) {
+    var named = known(id);
+    if (named) return named;
+    var guessed = guess(text);
+    if (guessed) return label(guessed);
+    return text == null ? '' : String(text);
+  }
+  function optionLabels(rows) {
+    var list = rows || [];
+    var counts = {};
+    var i;
+    for (i = 0; i < list.length; i++) {
+      var id = list[i] && list[i].canonical;
+      if (!id) continue;
+      counts[id] = (counts[id] || 0) + 1;
+    }
+    var out = [];
+    for (i = 0; i < list.length; i++) {
+      var row = list[i] || {};
+      var base = known(row.canonical);
+      var local = row.label == null ? '' : String(row.label);
+      if (!base) {
+        out.push(local);
+        continue;
+      }
+      if (counts[row.canonical] > 1 && local && norm(local) !== norm(base)) out.push(base + ' · ' + local);
+      else out.push(base);
+    }
+    return out;
+  }
   function related(id) {
     return RELATED[id] || [];
   }
@@ -53,5 +87,5 @@ window.FuelLogFuels = (function () {
     }
     return null;
   }
-  return { LIST: LIST, label: label, related: related, guess: guess };
+  return { LIST: LIST, label: label, related: related, guess: guess, present: present, optionLabels: optionLabels };
 })();
