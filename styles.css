@@ -72,8 +72,7 @@ html.prices-map-route,body.prices-map-route{overflow:hidden;height:100%;overscro
 .content.prices-route .leaflet-top.leaflet-left .map-provider-control{margin-bottom:0}
 .map-provider-control .map-provider-select{display:block;width:100%;min-width:34px;max-width:min(56vw,220px);font:inherit;font-size:12px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;background:rgba(255,255,255,.96);color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.12)}
 .map-provider-select:disabled{opacity:.65;cursor:not-allowed}
-.map-locate-control{border-radius:4px;overflow:hidden;box-shadow:0 1px 5px rgba(0,0,0,.2)}
-.map-locate-control .map-locate-btn{display:block;width:34px;height:34px;padding:0;margin:0;font-size:18px;line-height:1;border:0;border-radius:0;background:#fff;color:var(--primary);box-shadow:none}
+.leaflet-bar a.map-locate-btn{font-size:17px;font-weight:700;color:var(--primary);cursor:pointer}
 .price-offline-banner{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:450;background:rgba(16,32,29,.82);color:#fff;font-size:12px;padding:6px 12px;border-radius:4px;max-width:90%;text-align:center}
 .content.prices-route .price-sheet{position:relative;left:auto;right:auto;bottom:auto;flex:0 0 auto;z-index:500;width:100%;max-width:min(100%,1100px);margin:0 auto;background:rgba(255,255,255,.97);border:1px solid var(--line);border-bottom:0;border-radius:14px 14px 0 0;box-shadow:0 -8px 32px rgba(15,118,110,.15);display:flex;flex-direction:column;min-height:0;transition:height .22s ease;pointer-events:auto}
 .price-sheet{position:absolute;left:0;right:0;bottom:0;z-index:500;max-width:min(100%,1100px);margin:0 auto;background:rgba(255,255,255,.97);border:1px solid var(--line);border-bottom:0;border-radius:14px 14px 0 0;box-shadow:0 -8px 32px rgba(15,118,110,.15);display:flex;flex-direction:column;min-height:0;transition:height .22s ease;pointer-events:auto}
