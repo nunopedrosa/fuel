@@ -1,8 +1,8 @@
-const CACHE = 'fuellog-v21-opentopomap';
+const CACHE = 'fuellog-v23-prices-sheet-nav';
 const ASSETS = [
   './',
   'index.html',
-  'styles.css?v=19',
+  'styles.css?v=20',
   'config.js',
   'db.js',
   'app.js',
