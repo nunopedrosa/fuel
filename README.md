@@ -340,6 +340,10 @@ The History screen lists records with:
 
 Records can be edited or deleted individually.
 
+## Suggestion button
+
+A floating envelope button in the top-right corner opens the device's email app with a pre-addressed suggestion message: the subject is `[Fuel suggestion]` and the body names the page where the button was pressed, followed by a `Suggestion:` line to write on. Nothing is sent until the user presses send in their mail app. The button can be hidden in **Settings → Feedback**.
+
 ---
 
 # Consumption and cost calculations
