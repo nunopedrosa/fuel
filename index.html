@@ -12,7 +12,7 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
   <link rel="preload" href="fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=14" />
   <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
   <title>FuelLog</title>
 </head>
@@ -29,12 +29,11 @@
       <div class="top-actions">
         <span id="offlineBadge" class="status-pill">Offline ready</span>
         <button id="installBtn" class="btn ghost hidden">Install</button>
+        <a id="suggestBtn" class="fab hidden" href="mailto:nuno.f.pedrosa@gmail.com" aria-label="Email a suggestion" title="Suggest">✉</a>
       </div>
     </header>
 
     <main id="app" class="content" aria-live="polite"></main>
-
-    <a id="suggestBtn" class="fab hidden" href="mailto:nuno.f.pedrosa@gmail.com" aria-label="Email a suggestion" title="Suggest">✉</a>
 
     <nav class="bottom-nav" aria-label="Primary navigation">
       <button data-route="dashboard" class="nav-item active"><span>⌂</span><small>Home</small></button>

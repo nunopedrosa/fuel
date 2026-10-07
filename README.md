@@ -98,7 +98,7 @@ For the selected vehicle FuelLog displays:
 - source provenance and staleness labels on every price
 - your own fill-up history surfaced as a private local price source ("You paid … here")
 - "Add fill-up" from a station card or map popup
-- user-defined brand promos: per-litre or per-fill discounts that show an effective price on matching stations and re-sort results by effective price
+- user-defined brand promos: per-litre or per-fill discounts, cumulative or exclusive, that show an effective price on matching stations and re-sort results by that price
 - optional device geolocation
 - radius filtering when location is available
 - sorting by price and then distance
@@ -277,12 +277,13 @@ Fuel stations sometimes run brand-level promotions. In **Settings → Brand prom
 - a discount type: **€ per litre off** or **€ per fill off**
 - the amount
 - an optional fuel restriction and an optional end date
+- whether the promo is **cumulative** (the default) or exclusive
 
-Matching stations in the price list and on the map then show the **effective price** (the listed price minus the promo) together with the original price and a promo badge, and results are sorted by effective price. Per-fill discounts are converted to an approximate per-litre value using the configurable *Typical fill* size (default 40 L) for display and sorting.
+Cumulative promos that match the same station are added together. An exclusive promo is not combined with that stack or with other exclusive promos. The price list and the map show the **effective price** of the better package — the cumulative stack, or the single best exclusive promo — with the original price struck through and a promo badge. When both packages exist, the other one is shown on a second line. Results are sorted by the winning effective price. Per-fill discounts are converted to an approximate per-litre value using the configurable *Typical fill* size (default 40 L) for display and sorting. A promo saved before this option existed is treated as cumulative.
 
 Promos match on the station's `brand` field only. Providers that do not report a brand (France) never match; in Spain the provider uses the station name as the brand, so name-based brands work there.
 
-Starting a fill-up from a station card prefills the discounted price for per-litre promos; for per-fill promos the listed price is prefilled and a note reminds you to subtract the discount from the total.
+Starting a fill-up from a station card uses the winning package only. A per-litre winner prefills the effective price. If that package includes a per-fill discount, the form prefills the listed price minus any exact per-litre discounts and a note lists the per-fill amounts to subtract from the total. The price and the note stay editable, and saving stores what is on the form.
 
 ## Adding a fill-up
 
@@ -344,7 +345,7 @@ Records can be edited or deleted individually.
 
 ## Suggestion button
 
-A floating envelope button in the top-right corner opens the device's email app with a pre-addressed suggestion message: the subject is `[Fuel suggestion]` and the body names the page where the button was pressed, followed by a `Suggestion:` line to write on. Nothing is sent until the user presses send in their mail app. The button can be hidden in **Settings → Feedback**.
+An envelope button in the top-right corner of the title bar opens the device's email app with a pre-addressed suggestion message: the subject is `[Fuel suggestion]` and the body names the page where the button was pressed, followed by a `Suggestion:` line to write on. Nothing is sent until the user presses send in their mail app. The button can be hidden in **Settings → Feedback**.
 
 ---
 
@@ -735,7 +736,8 @@ A FuelLog backup has this general structure:
       "amount": 0.05,
       "fuelId": "",
       "validUntil": "",
-      "notes": ""
+      "notes": "",
+      "cumulative": true
     }
   ],
   "settings": []
@@ -1169,11 +1171,12 @@ Stores user-defined brand promotions. Typical object:
   "validUntil": "2026-12-31",
   "notes": "",
   "active": true,
+  "cumulative": true,
   "updatedAt": "2026-10-07T08:00:00.000Z"
 }
 ```
 
-`type` is `litre` (discount per litre) or `fill` (fixed discount per fill-up). Empty `country`/`fuelId` mean the promo applies to all countries/fuels.
+`type` is `litre` (discount per litre) or `fill` (fixed discount per fill-up). Empty `country`/`fuelId` mean the promo applies to all countries/fuels. `cumulative: false` marks an exclusive promo. A missing `cumulative` field means the promo stacks with other cumulative promos.
 
 ---
 
