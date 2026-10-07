@@ -1,8 +1,8 @@
-const CACHE = 'fuellog-v25-map-provider-stack';
+const CACHE = 'fuellog-v26-station-sheet';
 const ASSETS = [
   './',
   'index.html',
-  'styles.css?v=30',
+  'styles.css?v=31',
   'config.js',
   'db.js',
   'app.js',
