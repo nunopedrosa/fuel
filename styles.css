@@ -93,6 +93,8 @@ html.legacy-ios .content.prices-route #stationMap{min-height:180px}
 .price-station-list .station-title{margin:0 0 3px}
 .price-station-list .station-name-link{font-size:11px}
 .price-station-list .station .meta{font-size:9px;line-height:1.4}
+.price-station-list .station-prov{margin-top:2px;line-height:1.35}
+.price-station-list .station-side .meta.promo,.price-station-list .station-side .meta.promo-was{text-align:right}
 .price-station-list .station .station-price{font-size:15px}
 .price-station-list .station .distance{font-size:9px}
 .price-station-list .station-actions{margin-top:5px;gap:6px}
