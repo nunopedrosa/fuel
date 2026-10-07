@@ -2,7 +2,7 @@ const CACHE = 'fuellog-v25-map-provider-stack';
 const ASSETS = [
   './',
   'index.html',
-  'styles.css?v=29',
+  'styles.css?v=30',
   'config.js',
   'db.js',
   'app.js',
