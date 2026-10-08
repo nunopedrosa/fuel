@@ -5,7 +5,9 @@
 window.FuelLogPromos = (function () {
   var DEFAULT_FILL_LITRES = 40;
   function norm(t) {
-    return window.FuelProviders ? FuelProviders.norm(t) : String(t == null ? '' : t).toLowerCase();
+    var s = String(t == null ? '' : t).toLowerCase().replace(/\s+/g, ' ').trim();
+    if (s.normalize) s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return s;
   }
   function active(p, now) {
     if (!p || p.active === false) return false;

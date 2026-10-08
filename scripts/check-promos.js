@@ -178,6 +178,10 @@ var plain = P.effective(station(1.7, 'Repsol'), null, [promo({ amount: 0.05 })],
 assert.equal(plain.price, 1.7);
 assert.equal(plain.perLitre, 0);
 
+// Brand matching ignores case and surrounding whitespace.
+var caseBrand = P.offers(station(1.7, 'GALP'), null, [promo({ brand: 'galp', amount: 0.05 })], 40);
+assert(caseBrand.winner, 'brand match is case insensitive');
+
 // Promos match canonical fuel ids from price search, not UI labels.
 var dieselPromo = promo({ id: 'd', fuelId: 'DIESEL_B7', amount: 0.05 });
 var dieselSearch = P.offers(station(1.7), 'DIESEL_B7', [dieselPromo], 40);

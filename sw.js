@@ -2,7 +2,7 @@ const CACHE = 'fuellog-v29-station-sheet';
 const ASSETS = [
   './',
   'index.html',
-  'styles.css?v=32',
+  'styles.css?v=33',
   'config.js',
   'db.js',
   'app.js',
