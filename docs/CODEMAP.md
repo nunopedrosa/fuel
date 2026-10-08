@@ -77,7 +77,8 @@ user's fuel log. `.htaccess` and `api/cache/.htaccess` control hosting/cache acc
 
 - **New record fields:** forms and save handlers, import paths, migrations,
   JSON restore, CSV columns, calculations/display and README data examples.
-- **New import format:** file input acceptance in `settingsPage`, file reading
+- **New import format:** unrestricted file input in `settingsPage` (keep custom
+  extensions selectable on mobile), file reading
   and detection in `importData`, validation/preview, vehicle matching, duplicates
   and persistence. Jerrycan uses `js/import/bplist.js` and `jerrycan.js`;
   other formats retain their existing parsing helpers.

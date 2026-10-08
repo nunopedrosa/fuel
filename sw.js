@@ -1,4 +1,4 @@
-const CACHE = 'fuellog-v30-jerrycan';
+const CACHE = 'fuellog-v31-unfiltered-import';
 const ASSETS = [
   './',
   'index.html',

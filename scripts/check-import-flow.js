@@ -1,12 +1,15 @@
 'use strict';
 const fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('path');
 let batch,dialogs=[],captured;
-const window={},context=vm.createContext({window,Date,Intl,URL,console,setTimeout,clearTimeout,navigator:{userAgent:''},document:{querySelector(){return null}},FuelDB:{async commitImport(b){batch=b}},FuelLogFuels:{LIST:[],guess(){return null},label(){return ''},present(){return ''}},FuelProviders:{}});
+const window={},context=vm.createContext({window,Date,Intl,URL,console,setTimeout,clearTimeout,navigator:{userAgent:''},document:{querySelector(){return null}},FuelDB:{async commitImport(b){batch=b}},FuelLogFuels:{LIST:[],guess(){return null},label(){return ''},present(){return ''}},FuelProviders:{},FuelLogPromos:{DEFAULT_FILL_LITRES:40}});
 ['../js/data.js','../js/import/bplist.js','../js/import/jerrycan.js'].forEach(f=>vm.runInContext(fs.readFileSync(path.join(__dirname,f),'utf8'),context));context.FuelLogData=window.FuelLogData;context.FuelLogJerrycan=window.FuelLogJerrycan;
 vm.runInContext(fs.readFileSync(path.join(__dirname,'../app.js'),'utf8').replace(/init\(\)\.catch[\s\S]*$/,''),context);
 vm.runInContext('appDialog=async function(o){return this.dialogResults.shift()}; download=function(n,c){this.captured=c};toast=function(){};',context);context.dialogResults=[true];
 const run=code=>vm.runInContext(code,context);
 (async()=>{
+const picker=run("settingsPage()").match(/<input\b[^>]*id="importData"[^>]*>/)[0];
+assert.ok(!/\baccept\s*=/.test(picker),'mobile import picker must not filter out unregistered .jerrycan extensions');
+
 await run("state.vehicles=[{id:'car',name:'Car',currency:'EUR'}];state.fillups=[];state.settings={activeVehicle:'car'};importGenericRows([{date:'2026-01-01',odometer:1,litres:2,cost:4,currency:'USD',station_address:'Road',latitude:38,longitude:-9,city_percentage:0}],false)");
 assert.ok(batch,'generic imports must commit atomically');assert.equal(batch.fillups[0].currency,'USD');assert.equal(batch.fillups[0].cityPercentage,0);assert.equal(batch.fillups[0].stationLocation.address,'Road');
 context.dialogResults=[false];batch=null;await run("importGenericRows([{date:'2026-01-01',odometer:1,litres:2,cost:4}],true)");assert.equal(batch,null);

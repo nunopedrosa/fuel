@@ -54,6 +54,11 @@ XLS/XLSX is deliberately not bundled in the core PWA. A robust XLSX parser would
 
 ## Jerrycan import compatibility
 
+The import file input intentionally has no `accept` filter. Mobile document pickers
+can exclude custom extensions such as `.jerrycan` even when they appear in the
+filter. Select the backup using Browse/Files; FuelLog validates its contents and
+size after selection. An unrestricted picker does not add support for new formats.
+
 The binary reader uses FileReader, ArrayBuffer and DataView; it does not require
 BigInt, `File.text()` or a server. Decoding is bounded by the 5 MB input limit,
 100,000 objects, 64 levels of nesting and a 16 MB decoded allocation budget.
