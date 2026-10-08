@@ -66,7 +66,7 @@ For the selected vehicle FuelLog displays:
 - total fuel logged
 - total fuel spend
 - cost per kilometre
-- Fill analysis charts (L/100 km between full tanks, and €/L over time) when enough data exists
+- Interactive Fill analysis: period sliders, consumption and price history, monthly purchases, urban-driving comparison, point inspection and expanded zoom
 - recent fill-ups
 
 ### History
@@ -300,10 +300,63 @@ A fill-up contains:
 | Price/litre | No | Unit price; may be entered manually |
 | Station | No | Station name |
 | Fuel type | No | e.g. Gasóleo simples |
+| Urban driving | No | Estimated urban share since the previous fill-up (0–100%) |
 | Full tank | No | Indicates that the tank was filled to full |
 | Notes | No | Free-form comments |
 
 When adding a record, the date/time defaults to the current local time and FuelLog defaults to the active vehicle.
+
+The **Urban driving** slider appears below Fuel. Uncheck **Not specified** to
+enter an estimate; 0% means entirely outside urban areas and 100% entirely urban.
+Leave it unspecified when unknown. Imported values keep their original precision
+unless adjusted. Internally, `cityPercentage` stores a fraction from 0 to 1;
+manual changes set `cityPercentageSource` to `user` without replacing import
+provenance. JSON backups preserve both fields; CSV preserves only the fraction.
+
+## Exploring Fill analysis
+
+On Home, **Period position** moves the analysis window through your vehicle's
+history and **Period length** adjusts its duration in days. Shortcuts select
+1, 3, 6 or 12 calendar months ending at the selected endpoint; **All history**
+resets both controls. The overview highlights the chosen dates. Position is
+disabled when the window already covers the whole history.
+
+Summaries show distance-weighted consumption, completed distance, purchased
+litres, recorded spending, litre-weighted price paid and completed interval count.
+Spending and prices remain separate for each currency. Missing amounts are marked;
+partial spending totals include only recorded amounts. The preceding equal-duration
+period is shown for comparison where data exists; sparse coverage can affect that
+comparison.
+
+Choose **Consumption**, **Price paid**, **Purchases** or **Urban driving**.
+Consumption includes only full-to-full intervals with both endpoints within the
+inclusive selected dates. Intervals are calculated across the entire history first,
+including partial fills; boundary-crossing intervals are counted and excluded,
+never clipped. Purchase totals include purchases dated inside the window, so they
+cover different records. Unusual consumption remains visible; calculation warnings
+are accessible below the chart. Invalid-distance intervals are excluded without
+changing stored data.
+
+The dashed consumption trend weights up to five intervals by distance. Monthly
+charts show spending and litres separately for the chosen currency. Urban scatter
+plots require complete profiles across an interval, weight percentages by segment
+distance, and show known-distance coverage. Missing profiles remain unknown; zero
+means no urban driving. A zero-distance segment retains known positive-distance
+coverage but excludes the interval from scatter; a decreasing/invalid odometer
+segment makes the interval's urban profile unknown. The plot shows an association,
+not proof of cause.
+
+Tap a chart to inspect an observation, or focus it and use Left/Right/Home/End.
+**Expand** opens a larger view; **+**, **−** and **Reset** update the same period
+and summaries. Close or Escape returns focus to Expand. Zoom uses explicit buttons;
+pinch gestures are not implemented. Axes use stable full-history scales by default;
+**Automatic scale** fits the selected observations. Brief transitions are disabled
+by Reduce Motion and while dragging the sliders.
+
+Charts display at most 160 representative observations, preserving endpoints and
+bucket extremes; summary calculations use every eligible record. Purchases use
+at most 60 calendar buckets, combining months for very long histories. Sampling
+is labelled. Analysis stays local and works offline after the app shell is cached.
 
 ## Full tanks and partial fills
 

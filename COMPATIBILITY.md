@@ -24,6 +24,18 @@ FuelLog relies on capabilities available on that target:
 - CSS includes fallbacks for missing flex-gap and prefixes `backdrop-filter`.
 - Prices map uses an absolute-fill Leaflet container (Safari 12 flex + `height:100%` otherwise leaves a zero-height map). On iOS 12, hybrid tile layers omit `crossOrigin` on tiles; if the custom layer fails, OpenStreetMap.de tiles are used as a fallback.
 
+The optional urban-driving input uses a native range slider (0–100%) and checkbox,
+with a 44 px touch area and text labels. It requires no new browser APIs or runtime
+dependencies and is included in the offline app shell.
+
+The analysis explorer uses ordinary SVG, native range inputs, click/touch taps,
+keyboard inspection and a custom accessible expanded dialog. Zoom buttons avoid
+requiring pinch or modern Pointer Events. Chart output is capped at 160 observations
+and monthly aggregation at 60 buckets; exact summaries retain all eligible records.
+Date/number labels are formatted only after sampling. Reduced-motion preferences
+disable brief chart transitions. New analysis scripts are cached for offline use.
+Modern Chromium verification does not establish Safari 12 or Home Screen support.
+
 ## Install on iPhone 6
 
 1. Open the HTTPS site in Safari.

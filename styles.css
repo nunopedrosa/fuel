@@ -162,3 +162,75 @@ html.legacy-ios .content.prices-route #stationMap{min-height:180px}
 .modal-card{padding:var(--card-pad)}
 .price-station-list .empty{padding:var(--card-pad)}
 .card-collapse{top:calc(8px / 3);right:calc(8px / 3)}
+
+/* Native range and explicit checkbox remain usable in Safari 12, including offline. */
+.urban-profile-heading{display:flex;align-items:center;justify-content:space-between}
+.fill-form-compact .urban-profile-missing{display:flex;align-items:center;min-height:44px;margin:0;font-weight:400}
+.fill-form-compact .urban-profile-missing input{width:18px;height:18px;margin:0 7px 0 0;padding:0}
+.fill-form-compact .urban-profile input[type=range]{padding:0;min-height:44px;background:transparent;border:0;cursor:pointer}
+.urban-profile input[type=range]:disabled{opacity:0.45}
+.urban-profile-value{font-weight:700;color:var(--primary);font-size:12px}
+.urban-profile small{color:var(--muted);font-size:11px;line-height:1.4}
+
+/* History explorer: one visual canvas, bounded SVG, native sliders and old-Safari spacing. */
+.analysis-explorer{min-width:0;padding:18px}
+.analysis-explorer h2{margin-bottom:18px}
+.analysis-period{padding:14px;background:#f3f8f6;border-radius:6px}
+.analysis-date-row{display:flex;justify-content:space-between;flex-wrap:wrap;align-items:baseline;font-size:13px;line-height:1.6}
+.analysis-date-row span{color:var(--muted);font-size:12px;margin-left:8px}
+.analysis-overview{margin:10px 0 5px}
+.analysis-overview svg{display:block;width:100%;height:36px}
+.analysis-sliders{display:grid;grid-template-columns:1fr 1fr;column-gap:18px}
+.analysis-sliders label{font-size:12px;color:#304642;font-weight:600;min-width:0}
+.analysis-sliders input{display:block;width:100%;margin:0;min-height:44px;padding:0;cursor:pointer}
+.analysis-sliders input:disabled{opacity:.4}
+.analysis-shortcuts{display:flex;flex-wrap:wrap;margin:2px -3px -3px}
+.analysis-shortcuts button,.analysis-tabs button,.analysis-zoom button{font:inherit;font-size:12px;min-height:44px;border:1px solid var(--line);border-radius:4px;background:white;padding:7px 11px;cursor:pointer;margin:3px;color:var(--primary)}
+.analysis-shortcuts button:hover,.analysis-zoom button:hover{background:#e2f2ec}
+.analysis-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:18px;border-bottom:1px solid var(--line)}
+.analysis-summary>div{padding:10px 6px 14px;min-width:0}
+.analysis-summary span{display:block;color:var(--muted);font-size:11px;line-height:1.4;margin-bottom:5px}
+.analysis-summary strong{display:block;font-size:20px;font-weight:600;line-height:1.25;font-variant-numeric:tabular-nums;overflow-wrap:break-word}
+.analysis-summary small{font-size:10px;font-weight:400;color:var(--muted)}
+.analysis-comparison{font-size:12px;color:var(--muted);line-height:1.6;margin:12px 6px 16px}
+.analysis-comparison strong{font-weight:500;color:#304642}
+.analysis-tabs{display:flex;flex-wrap:wrap;margin:0 -3px 10px}
+.analysis-tabs button{border-color:transparent;background:transparent;font-weight:600}
+.analysis-tabs button[aria-pressed=true]{background:#dff2eb;color:#075d53;border-color:#acd6c9}
+.analysis-chart-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:0 -3px 8px}
+.analysis-chart-toolbar>label,.analysis-chart-toolbar>button{margin:3px;min-height:44px;font-size:12px}
+.analysis-chart-toolbar label{display:flex;align-items:center}
+.analysis-chart-toolbar select{font:inherit;margin-left:7px;border:1px solid var(--line);border-radius:4px;background:white;min-height:38px;padding:5px}
+.analysis-chart-toolbar input{width:18px;height:18px;margin:0 7px 0 0}
+.analysis-chart-toolbar .btn{padding:8px 10px}
+.analysis-chart-target{min-width:0}
+.analysis-svg{display:block;width:100%;max-width:850px;height:auto;margin:0 auto;overflow:hidden;cursor:crosshair}
+.analysis-svg text{font-family:inherit;font-size:18px;fill:#597169;font-variant-numeric:tabular-nums}
+.analysis-svg .analysis-unit{font-size:18px;font-weight:600;fill:#304642}
+.analysis-svg:focus{outline:2px solid #8cc7b8;border-radius:4px}
+.analysis-gridline{stroke:#e0eae5;stroke-width:1}
+.analysis-area{fill:#0f8c81;fill-opacity:.07}
+.analysis-line{fill:none;stroke:#0f8c81;stroke-width:2.5;stroke-linejoin:round}
+.analysis-price-line{stroke:#ce851d}
+.analysis-trend{fill:none;stroke:#526e65;stroke-width:2;stroke-dasharray:7 5}
+.analysis-crosshair{stroke:#526e65;stroke-width:1;stroke-dasharray:3 4}
+.analysis-selected{stroke:#102f27;stroke-width:3}
+.analysis-chart-caption,.analysis-notes{font-size:12px;line-height:1.6;color:var(--muted);margin:10px 0}
+.analysis-inspection{padding:12px 14px;min-height:55px;background:#f3f8f6;border-left:3px solid #0f8c81;border-radius:0 4px 4px 0;font-size:13px;line-height:1.5;color:#304642}
+.analysis-empty{min-height:150px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;color:var(--muted);padding:16px;background:#f8fbf9;border-radius:4px}
+.analysis-chart-target h3{font-size:13px;font-weight:600;margin:12px 0 0}
+.analysis-reveal{animation:analysis-appear .2s ease-out}
+@keyframes analysis-appear{from{opacity:.5}to{opacity:1}}
+.analysis-overlay{position:fixed;top:0;right:0;bottom:0;left:0;z-index:1200;background:rgba(16,32,29,.5);display:flex;align-items:center;justify-content:center;padding:12px}
+.analysis-dialog{background:white;width:100%;max-width:1050px;max-height:calc(100% - 24px);overflow-y:auto;-webkit-overflow-scrolling:touch;border-radius:8px;padding:20px;box-shadow:0 16px 60px rgba(16,32,29,.25)}
+.analysis-expanded-header{display:flex;align-items:center;justify-content:space-between}
+.analysis-expanded-header h2{font-size:20px;margin:0}
+.analysis-expanded-dates{font-size:13px;color:var(--muted);margin:10px 0}
+.analysis-zoom{display:flex;align-items:center;flex-wrap:wrap;margin:0 -3px 8px}
+.analysis-zoom button{font-size:16px;min-width:44px}
+.analysis-zoom span{font-size:12px;color:var(--muted);margin:6px}
+@media(max-width:600px){.analysis-explorer{padding:12px}.analysis-period{padding:10px}.analysis-sliders{column-gap:12px}.analysis-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.analysis-summary strong{font-size:18px}.analysis-dialog{padding:12px}.analysis-overlay{padding:8px}.analysis-tabs button{padding:7px 8px;font-size:11px}.analysis-svg text{font-size:20px}.analysis-chart-caption,.analysis-notes{font-size:11px}.analysis-explorer h2{font-size:18px}.analysis-date-row{font-size:12px}.analysis-date-row span{margin-left:0;margin-right:5px}}
+@media(prefers-reduced-motion:reduce){.analysis-reveal{animation:none}}
+.analysis-warnings{font-size:12px;color:#795629;line-height:1.5;margin-top:12px}
+.analysis-warnings summary{cursor:pointer;min-height:32px}
+.analysis-warnings p{margin:6px 0}

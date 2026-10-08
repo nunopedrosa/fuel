@@ -1,13 +1,15 @@
-const CACHE = 'fuellog-v32-fill-form-compact';
+const CACHE = 'fuellog-v34-analysis-explorer';
 const ASSETS = [
   './',
   'index.html',
-  'styles.css?v=41',
+  'styles.css?v=43',
   'config.js',
   'db.js',
   'js/data.js',
   'js/import/bplist.js',
   'js/import/jerrycan.js',
+  'js/analysis.js',
+  'js/analysis-ui.js',
   'app.js',
   'manifest.webmanifest',
   'icons/icon.svg',

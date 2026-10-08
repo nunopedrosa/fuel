@@ -1,0 +1,20 @@
+'use strict';
+const fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('path');
+const context=vm.createContext({window:{},Date,Intl,console});
+['data.js','analysis.js'].forEach(f=>vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/'+f),'utf8'),context));context.FuelLogData=context.window.FuelLogData;context.FuelLogAnalysis=context.window.FuelLogAnalysis;
+const file=path.join(__dirname,'../js/analysis-ui.js');assert.ok(fs.existsSync(file),'explorer must offer linked period controls and inspection');
+vm.runInContext(fs.readFileSync(file,'utf8'),context);const U=context.window.FuelLogAnalysisUI,A=context.FuelLogAnalysis;
+const empty=U.render(A.prepare([],[]),'empty');assert.ok(empty.includes('No dated fill-ups'));
+const model=A.prepare([{id:'x',date:'2026-01-01',odometer:1,litres:20,totalCost:40,currency:'EUR',fullTank:true},{id:'y',date:'2026-02-01',odometer:201,litres:20,totalCost:40,currency:'EUR',fullTank:true,cityPercentage:0}],[]);
+const html=U.render(model,'car');['analysisPosition','analysisLength','analysisDates','analysisSummary','analysisChart'].forEach(id=>assert.ok(html.includes('id="'+id+'"')));assert.ok(html.includes('Urban driving'));assert.ok(html.includes('Expand'));assert.ok(html.includes('Automatic scale'));
+const one=U.chart(model,{start:model.min,end:model.max,tab:'consumption',currency:'EUR',auto:false});assert.ok(one.html.includes('<circle'),'single interval renders a point');assert.ok(one.details.length===1);assert.ok(!/NaN|Infinity/.test(one.html));
+const price=U.chart(model,{start:model.min,end:model.max,tab:'price',currency:'EUR',auto:false});assert.equal(price.details.length,2);
+const escaped=A.prepare([{date:'2026-01-01',litres:20,totalCost:40,currency:'EUR',station:'<script>bad</script>'}],[]);assert.ok(!U.chart(escaped,{start:escaped.min,end:escaped.max,tab:'price',currency:'EUR'}).html.includes('<script>'));
+const single=A.prepare([{date:'2026-01-01',litres:20,totalCost:40,currency:'EUR'}],[]),bars=U.chart(single,{start:single.min,end:single.max,tab:'monthly',currency:'EUR',auto:false});
+const rects=Array.from(bars.html.matchAll(/<rect data-analysis-point="\d+" x="([^"]+)"[^>]*width="([^"]+)"/g));assert.equal(rects.length,2);rects.forEach(r=>assert.ok(Number(r[1])>=54&&Number(r[1])+Number(r[2])<=622,'single timestamp bars must stay inside plot'));
+const twoMonths=A.prepare([{date:'2026-01-01',litres:20,totalCost:40,currency:'EUR'},{date:'2026-02-01',litres:20,totalCost:40,currency:'EUR'}],[]);const twoBars=U.chart(twoMonths,{start:twoMonths.min,end:twoMonths.max,tab:'monthly',currency:'EUR',auto:false});
+Array.from(twoBars.html.matchAll(/<rect data-analysis-point="\d+" x="([^"]+)"[^>]*width="([^"]+)"/g)).forEach(r=>assert.ok(Number(r[1])>=54&&Number(r[1])+Number(r[2])<=622,'edge-month bars must stay inside date domain'));
+const longFills=Array.from({length:10000},(_,i)=>({date:new Date(Date.UTC(2000,0,i+1)).toISOString(),odometer:i*400,litres:32+i%5,totalCost:60+i%5,currency:'EUR',fullTank:true,cityPercentage:i%10/10}));const longModel=A.prepare(longFills,[]);
+const originalDateFormat=Date.prototype.toLocaleDateString;let formatted=0;Date.prototype.toLocaleDateString=function(){formatted++;return originalDateFormat.apply(this,arguments)};
+try {for(const tab of ['consumption','urban','price']){formatted=0;const output=U.chart(longModel,{start:longModel.min,end:longModel.max,tab,currency:'EUR',auto:false});assert.ok(output.details.length<=160);assert.ok(formatted<=330,'date formatting must be bounded after sampling: '+tab+' '+formatted);}}finally{Date.prototype.toLocaleDateString=originalDateFormat;}
+console.log('analysis explorer controls, single points and safe SVG passed');

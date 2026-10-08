@@ -15,12 +15,13 @@ adapters, Leaflet, data/import modules, then the application.
 | Area or task | Files | Useful entry points |
 | --- | --- | --- |
 | Startup, state and navigation | [app.js](../app.js), [index.html](../index.html) | `init`, `refresh`, `route`, `render`, `wireCommon` |
-| Dashboard, history and charts | [app.js](../app.js) | `dashboard`, `history`, `fillRow`, `analysisCard`, `sparklineSvg` |
+| Dashboard and history | [app.js](../app.js) | `dashboard`, `history`, `fillRow`, `analysisCard` |
+| Interactive history analysis | [js/analysis.js](../js/analysis.js), [js/analysis-ui.js](../js/analysis-ui.js) | `FuelLogAnalysis.prepare`, `select`, `monthly`, `sample`; `FuelLogAnalysisUI.render`, `mount`, `chart` |
 | Binary-plist decoding | [js/import/bplist.js](../js/import/bplist.js) | `FuelLogBplist.decode` |
 | Jerrycan normalization | [js/import/jerrycan.js](../js/import/jerrycan.js), [app.js](../app.js) | `FuelLogJerrycan.inspect`, `normalize`, `importJerrycan`, `prepareJerrycanBatch` |
 | Shared data semantics | [js/data.js](../js/data.js) | `FuelLogData.intervals`, `currency`, `sourceKey`, `amountsByCurrency` |
 | Consumption and cost calculations | [app.js](../app.js) | `vehicleFillups`, `calcMetrics`, `consumptionSeries`, `priceSeries` |
-| Fill-up and vehicle editing | [app.js](../app.js) | `fillForm`, fill-up submit handler in `wireCommon`, `vehicleDialog`, `wireVehicleForm` |
+| Fill-up and vehicle editing | [app.js](../app.js) | `fillForm`, `urbanProfileField`, `wireUrbanProfile`, fill-up submit handler in `wireCommon`, `vehicleDialog`, `wireVehicleForm` |
 | Import parsing and validation | [app.js](../app.js) | `importData`, `readFileText`, `extractRowsFromJson`, `parseDelimited`, `guessDelimiter`, `flexDate`, `flexNum`, `flexBool`, `rowValue` |
 | Import persistence and duplicates | [app.js](../app.js) | `importGenericRows`, `ensureVehicleByName`, `importFuelLogBackup` |
 | Backup and export | [app.js](../app.js) | `exportJson`, `exportCsv`, `download` |
@@ -46,14 +47,19 @@ source policies are documented in [PROVIDERS.md](PROVIDERS.md).
   → `migrateData` → `render` → service-worker registration.
 - **Editing:** form → submit handler → `FuelDB.put` → `refresh` → rendering.
   Both save handlers preserve existing fields; unchanged fill-up dates retain
-  seconds/milliseconds. Review both when adding metadata.
+  seconds/milliseconds. The urban slider writes `cityPercentage` only when changed,
+  preserves untouched imported precision and marks manual changes with
+  `cityPercentageSource: "user"`. Review both when adding metadata.
 - **Imports:** `importData` → binary header detection or JSON/delimited parsing
   → Jerrycan controls or generic mode controls → normalization/validation →
   preview and duplicates → `FuelDB.commitImport` → `refresh` → `render`.
   Native backups validate records/references before the same transaction path.
 - **Calculations:** `vehicleFillups` → shared `FuelLogData.intervals` →
   `calcMetrics` summaries and `consumptionSeries` charts. Monetary summaries and
-  price series separate currencies.
+  price series separate currencies. The explorer builds intervals from whole history,
+  then selects wholly contained intervals and purchases within inclusive dates.
+  Its sliders and expanded zoom share one ephemeral window; chart sampling does
+  not affect summaries. Urban profiles use positive segment distances.
 - **Prices:** selected country/fuel → provider or optional proxy → normalized
   prices → promo comparison → cards/map. `userStationPrices` reads local fill-ups
   as a separate historical price source. Provider caches and search archives allow
