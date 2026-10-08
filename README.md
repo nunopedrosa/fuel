@@ -317,8 +317,8 @@ provenance. JSON backups preserve both fields; CSV preserves only the fraction.
 
 On Home, **Period position** moves the analysis window through your vehicle's
 history and **Period length** adjusts its duration in days. Shortcuts select
-1, 3, 6 or 12 calendar months ending at the selected endpoint; **All history**
-resets both controls. The overview highlights the chosen dates. Position is
+**Months** shortcuts (**All**, **1**, **3**, **6**, **12**) select that many
+calendar months ending at the selected endpoint; **All** resets both controls. The overview highlights the chosen dates. Position is
 disabled when the window already covers the whole history.
 
 Summaries show distance-weighted consumption, completed distance, purchased
