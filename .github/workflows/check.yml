@@ -31,7 +31,10 @@ jobs:
           node scripts/check-jerrycan.js
           node scripts/check-import-transaction.js
           node scripts/check-import-flow.js
+          node scripts/check-urban-profile.js
           node scripts/check-import-backup.js
+          node scripts/check-analysis.js
+          node scripts/check-analysis-ui.js
           node scripts/check-calc.js
           node scripts/check-migrate.js
           node scripts/check-providers.js
