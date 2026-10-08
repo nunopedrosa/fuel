@@ -1,8 +1,8 @@
-const CACHE = 'fuellog-v31-unfiltered-import';
+const CACHE = 'fuellog-v32-fill-form-compact';
 const ASSETS = [
   './',
   'index.html',
-  'styles.css?v=34',
+  'styles.css?v=36',
   'config.js',
   'db.js',
   'js/data.js',
