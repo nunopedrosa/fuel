@@ -120,6 +120,8 @@ html.legacy-ios .content.prices-route #stationMap{min-height:180px}
 .fill-form-compact{font-size:80%}
 .fill-form-compact .field label{font-size:10.4px}
 .fill-form-compact .field input,.fill-form-compact .field select,.fill-form-compact .field textarea,.fill-form-compact .fill-form-fuel-row input{font-size:16px;padding:7px 10px}
+.fill-form-compact input[type=number],.fill-form-compact .fill-total-readonly{text-align:center}
+.fill-form-compact input[type=text]:not(.fill-total-readonly),.fill-form-compact select,.fill-form-compact textarea{text-align:left}
 .fill-form-compact .field textarea{min-height:52px}
 .fill-form-compact .form-grid,.fill-form-compact.fill-form-grid{gap:9px}
 .fill-form-compact .form-actions,.fill-form-compact .fill-form-actions{margin-top:10px}
@@ -138,7 +140,8 @@ html.legacy-ios .content.prices-route #stationMap{min-height:180px}
 .fill-form-row{grid-column:1/-1;display:grid;gap:9px;align-items:end}
 .fill-form-price-row{grid-template-columns:1fr 1fr}
 .fill-field-grow{min-width:0}
-.fill-inline-check{display:flex;align-items:center;gap:6px;padding-bottom:9px;white-space:nowrap}
+.fill-inline-check{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.fill-form-fuel-row .fill-inline-check{align-self:center;min-height:38px;padding-bottom:0}
 .fill-inline-check input{width:16px;height:16px;margin:0}
 .fill-inline-check label{font-size:10.4px;font-weight:700;color:#304642;margin:0}
 .fill-form-compact .field-inline .btn{padding:9px 11px;font-size:inherit}

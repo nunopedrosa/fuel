@@ -2,7 +2,7 @@ const CACHE = 'fuellog-v32-fill-form-compact';
 const ASSETS = [
   './',
   'index.html',
-  'styles.css?v=40',
+  'styles.css?v=41',
   'config.js',
   'db.js',
   'js/data.js',
