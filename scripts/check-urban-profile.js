@@ -5,7 +5,8 @@ vm.runInContext(fs.readFileSync(path.join(__dirname,'../app.js'),'utf8').replace
 const run=s=>vm.runInContext(s,context);
 const html=run('fillForm()');
 assert.ok(html.includes('id="fillUrban"'),'fill-up must offer urban-driving slider');
-assert.ok(html.indexOf('name="fuelId"')<html.indexOf('id="fillUrban"'),'slider belongs below Fuel');
+assert.ok(html.indexOf('name="fuelId"')<html.indexOf('id="fillUrban"'),'slider belongs below fuel type');
+assert.ok(!html.includes('Estimate driving since the previous fill-up'),'urban profile hint removed');
 function form(original){
  const range={value:original==null?'50':String(Math.round(original*100)),disabled:false,getAttribute(){return original==null?'':String(original)},setAttribute(k,v){this[k]=v}};
  const missing={checked:original==null},output={textContent:''};
