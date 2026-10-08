@@ -37,6 +37,7 @@ The `beforeinstallprompt` event used by Chromium is not available in iOS 12; thi
 
 FuelLog can import:
 
+- Jerrycan binary-plist backups decoded on-device
 - FuelLog JSON backups
 - Generic JSON arrays of fuel records
 - JSON objects containing `fillups`, `records`, `entries`, or `data` arrays
@@ -50,3 +51,14 @@ The delimited importer auto-detects comma, semicolon, or tab separators, accepts
 Examples include `date` / `data`, `odometer` / `quilometragem`, `litres` / `litros`, `cost` / `custo`, `price_per_litre` / `preco_litro`, `station` / `posto`, and `vehicle` / `viatura`.
 
 XLS/XLSX is deliberately not bundled in the core PWA. A robust XLSX parser would substantially increase the static payload and memory use on the iPhone 6. Exporting the spreadsheet as CSV/TSV before import preserves the lightweight/offline-first design.
+
+## Jerrycan import compatibility
+
+The binary reader uses FileReader, ArrayBuffer and DataView; it does not require
+BigInt, `File.text()` or a server. Decoding is bounded by the 5 MB input limit,
+100,000 objects, 64 levels of nesting and a 16 MB decoded allocation budget.
+Duplicate/overlapping object offsets are rejected. Import previews scroll within the screen
+on narrow phones. New decoder/data modules are included in the offline app shell.
+Source-unit and fuel confirmation avoids assuming undocumented Jerrycan enums.
+Static checks and modern-browser tests do not establish physical iPhone 6 support;
+actual Safari 12 and Home Screen testing must be reported separately.

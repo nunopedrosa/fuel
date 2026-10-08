@@ -30,6 +30,26 @@ const FuelDB = (() => {
   const del = (store, key) => new Promise((res, rej) => { const r = tx(store, 'readwrite').delete(key); r.onsuccess = () => res(); r.onerror = () => rej(r.error); });
   const clear = store => new Promise((res, rej) => { const r = tx(store, 'readwrite').clear(); r.onsuccess = () => res(); r.onerror = () => rej(r.error); });
 
+  // All requests are enqueued synchronously; success means the transaction committed.
+  const commitImport = batch => new Promise((resolve, reject) => {
+    const stores = ['vehicles', 'fillups', 'settings', 'promos'].filter(name => batch[name] !== undefined);
+    let transaction;
+    try {
+      transaction = db.transaction(stores, 'readwrite');
+      transaction.oncomplete = () => resolve();
+      transaction.onabort = () => reject(transaction.error || new Error('Import aborted; existing data was preserved.'));
+      transaction.onerror = () => {}; // Let the default IndexedDB action abort the whole batch.
+      stores.forEach(name => {
+        const store = transaction.objectStore(name);
+        if (batch.replace && name !== 'settings') store.clear();
+        batch[name].forEach(record => store.put(record));
+      });
+    } catch (error) {
+      if (transaction) { try { transaction.abort(); } catch (_) {} }
+      reject(error);
+    }
+  });
+
   async function evictMapTiles(maxBytes) {
     const cap = maxBytes || MAP_TILE_MAX_BYTES;
     const rows = await all('mapTiles');
@@ -54,7 +74,7 @@ const FuelDB = (() => {
   }
 
   return {
-    open, all, get, put, del, clear,
+    open, all, get, put, del, clear, commitImport,
     putMapTile, getMapTile, evictMapTiles,
     MAP_TILE_MAX_BYTES
   };

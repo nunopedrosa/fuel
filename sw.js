@@ -1,10 +1,13 @@
-const CACHE = 'fuellog-v29-station-sheet';
+const CACHE = 'fuellog-v30-jerrycan';
 const ASSETS = [
   './',
   'index.html',
-  'styles.css?v=33',
+  'styles.css?v=34',
   'config.js',
   'db.js',
+  'js/data.js',
+  'js/import/bplist.js',
+  'js/import/jerrycan.js',
   'app.js',
   'manifest.webmanifest',
   'icons/icon.svg',

@@ -1,0 +1,12 @@
+{
+  "resultado": [{
+    "Id": 42,
+    "Nome": "Posto Teste",
+    "Marca": "Galp",
+    "Morada": "Rua A",
+    "Preco": "1,799",
+    "Latitude": "38,7200",
+    "Longitude": "-9,1400",
+    "DataAtualizacao": "2026-01-01 10:00"
+  }]
+}

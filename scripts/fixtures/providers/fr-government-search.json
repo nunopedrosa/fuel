@@ -1,0 +1,11 @@
+{
+  "results": [{
+    "id": "FR-100",
+    "adresse": "1 Rue de Rivoli",
+    "cp": "75001",
+    "ville": "Paris",
+    "geom": { "lat": 48.8566, "lon": 2.3522 },
+    "gazole_prix": "1,852",
+    "gazole_maj": "2026-01-01 10:00:00"
+  }]
+}

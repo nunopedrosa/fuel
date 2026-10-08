@@ -80,6 +80,7 @@ For the selected vehicle FuelLog displays:
 
 - canonical lossless FuelLog JSON backup
 - CSV export for spreadsheets and other tools
+- native Jerrycan binary-plist import
 - generic JSON import
 - comma-separated CSV import
 - semicolon-separated CSV import, common with European Excel installations
@@ -382,7 +383,7 @@ sum of litres recorded for the selected vehicle
 ## Total spend
 
 ```text
-sum of totalCost for all recorded fill-ups for the selected vehicle
+sum of totalCost for recorded fill-ups, grouped separately by currency
 ```
 
 ## Cost per kilometre
@@ -484,6 +485,48 @@ For Excel or Numbers data:
 3. import that file into FuelLog.
 
 An optional on-demand XLSX import module may be considered in the future without making it part of the core application.
+
+## Jerrycan backups
+
+Select a `.jerrycan` backup in Settings → Import data. FuelLog decodes the binary
+plist locally, including when offline; the file is never uploaded. Confirm the
+source distance and volume units and choose a fuel, or leave the fuel unset.
+Numeric Jerrycan unit/fuel codes are not interpreted automatically.
+
+Choose a new vehicle or an existing vehicle. Repeat imports recognise a previously
+imported source vehicle and skip matching records in that vehicle. Existing vehicle
+metadata is preserved. Merge keeps existing data; Replace removes all local vehicles
+and fill-ups, then creates the vehicle from the file. A final preview shows usable
+records, full/partial fills, locations, date range, currency totals, duplicates,
+invalid rows that will be excluded, and warnings. Cancel writes nothing. Writes
+commit together; a failed import preserves the previous dataset.
+
+Imported fields include station address/coordinates and Jerrycan station IDs,
+urban-driving estimates, vehicle details, source metadata and original numeric
+precision. Imported details appear in the edit forms. Editing another field retains
+that metadata and the unchanged timestamp. The original binary-plist date value
+is retained in source metadata, including precision beyond JavaScript milliseconds. Stations are not automatically assigned
+an external provider ID. Placeholder VIN and conflicting transmission fields stay
+in source metadata rather than becoming trusted vehicle facts.
+
+Native plist dates represent UTC instants. Dates stored as timezone-free text
+require an explicit UTC offset in minutes. Source units can be kilometres/miles
+and litres/US gallons/imperial gallons; FuelLog normalizes to km and litres.
+
+Currency is explicit on each fill-up. Legacy records default to EUR. Spending totals
+and price charts separate currencies, without exchange-rate conversion. Jerrycan's
+`PriceInDefaultCurr` is retained in the vehicle's default currency; if the source
+unit price uses another currency, FuelLog derives the comparable unit price from
+that total and preserves the foreign price in source metadata. Logged spending per
+km remains purchases divided by logged distance, not a consumed-fuel cost measure.
+Consumption uses completed full-to-full intervals and includes intervening partial
+fills. Review warnings do not silently alter the history.
+
+Full JSON backups use version 4 and retain nested metadata; versions 1–3 remain
+importable. CSV exports include currency, station address/coordinates, Jerrycan
+station ID and urban fraction, but omit nested source metadata and extended vehicle
+metadata. Use JSON for a lossless backup. CSV now labels costs `total_cost` plus
+`currency`; the older `total_cost_eur` import heading is still accepted.
 
 ## Maximum import size
 
@@ -666,7 +709,7 @@ Merge keeps existing local data and adds new records.
 For generic imports, FuelLog uses this combination as a practical duplicate key:
 
 ```text
-vehicle + date/time + odometer + litres
+vehicle + date/time + odometer + litres + currency + total cost
 ```
 
 If that combination already exists, the incoming row is skipped.
@@ -675,7 +718,8 @@ This is intentionally conservative and lightweight; it is not a universal semant
 
 ### Replace
 
-Replace clears the local vehicle and fill-up stores before importing the new data.
+Replace clears and writes the local vehicle and fill-up stores in one transaction,
+after preview confirmation. A failed transaction preserves the previous dataset.
 
 Use replace only when the imported file should become the authoritative local dataset.
 
@@ -699,7 +743,7 @@ A FuelLog backup has this general structure:
 ```json
 {
   "format": "FuelLog",
-  "version": 3,
+  "version": 4,
   "exportedAt": "2026-10-06T18:00:00.000Z",
   "vehicles": [
     {
@@ -720,6 +764,7 @@ A FuelLog backup has this general structure:
       "odometer": 123456,
       "litres": 45.2,
       "totalCost": 76.5,
+      "currency": "EUR",
       "pricePerLitre": 1.692,
       "station": "Example station",
       "fuelType": "Gasóleo simples",
@@ -755,26 +800,19 @@ A FuelLog JSON backup should be preferred over manipulating internal IndexedDB d
 FuelLog's own CSV export contains these columns:
 
 ```text
-id
- date
- vehicle
- odometer_km
- litres
- total_cost_eur
- price_per_litre
- full_tank
- fuel_type
- station
- notes
+id, date, vehicle, odometer_km, litres, total_cost, currency, price_per_litre,
+full_tank, fuel_type, station, fuel_id, station_id, country, notes,
+station_address, latitude, longitude, jerrycan_station_id, city_percentage
 ```
 
-In the actual file these are comma-separated on the header row.
+The actual file uses comma-separated headers. Nested import provenance and extended
+vehicle details are preserved by JSON backups rather than CSV.
 
-Example:
+Example of a smaller generic CSV accepted by the importer:
 
 ```csv
-id,date,vehicle,odometer_km,litres,total_cost_eur,price_per_litre,full_tank,fuel_type,station,notes
-abc123,2026-10-06T17:30:00.000Z,My car,123456,45.2,76.50,1.692,true,Gasóleo simples,Example station,
+id,date,vehicle,odometer_km,litres,total_cost,currency,price_per_litre,full_tank,fuel_type,station,notes
+abc123,2026-10-06T17:30:00.000Z,My car,123456,45.2,76.50,EUR,1.692,true,Diesel B7,Example station,
 ```
 
 Fields that require quoting are escaped using normal CSV rules.
@@ -1084,10 +1122,10 @@ FuelLogDB
 Current database version:
 
 ```text
-2
+3
 ```
 
-It contains five object stores.
+It contains six object stores.
 
 ## `vehicles`
 

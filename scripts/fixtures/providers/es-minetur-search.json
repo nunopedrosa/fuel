@@ -1,0 +1,13 @@
+{
+  "Fecha": "01/01/2026 10:00:00",
+  "ListaEESSPrecio": [{
+    "IDEESS": "ES-9001",
+    "Rótulo": "Repsol",
+    "Localidad": "madrid",
+    "Dirección": "Calle Mayor 1",
+    "Municipio": "Madrid",
+    "Latitud": "40.4168",
+    "Longitud (WGS84)": "-3.7038",
+    "Precio Gasoleo A": "1,459"
+  }]
+}

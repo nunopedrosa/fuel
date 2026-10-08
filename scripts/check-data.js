@@ -1,0 +1,14 @@
+'use strict';
+const fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('path');const window={};
+vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../js/data.js'),'utf8'),{window,Date});const D=window.FuelLogData;
+const fills=[{date:'2026-01-01',odometer:100000,litres:60,fullTank:true},{date:'2026-01-02',odometer:100300,litres:25,fullTank:false},{date:'2026-01-03',odometer:100550,litres:20,fullTank:false},{date:'2026-01-04',odometer:100800,litres:35,fullTank:true}];
+assert.equal(D.intervals(fills).intervals[0].consumption,10);assert.equal(D.intervals(fills.slice(0,3)).intervals.length,0);
+assert.equal(D.intervals([fills[0],Object.assign({},fills[3],{odometer:100000})]).intervals.length,0);
+assert.equal(JSON.stringify(D.amountsByCurrency([{currency:'EUR',totalCost:10},{currency:'USD',totalCost:20}],[])),JSON.stringify({EUR:10,USD:20}));
+assert.equal(D.currency({},{}),'EUR');assert.equal(D.sourceKey({date:'x',odometer:1,litres:2,totalCost:3,currency:'EUR'}),D.sourceKey({date:'x',odometer:1,litres:2,totalCost:3,currency:'EUR',filename:'other'}));
+const interval=D.intervals(fills).intervals[0];
+assert.equal(interval.litres,80,'partials between full tanks count toward consumption');
+assert.equal(interval.distance,800);
+const odd=D.intervals([fills[0],{date:'2026-01-05',odometer:99900,litres:50,fullTank:true}]);
+assert.ok(odd.warnings.length>0,'nonpositive distance must warn');
+console.log('data checks passed');

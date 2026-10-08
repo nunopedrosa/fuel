@@ -109,3 +109,10 @@ html.legacy-ios .content.prices-route #stationMap{min-height:180px}
 .price-source-details p{margin:0 0 8px}
 @media(max-width:800px){.content.prices-route~.bottom-nav{z-index:600}.content.prices-route .price-sheet{position:fixed;left:0;right:0;bottom:var(--bottom-nav-h);z-index:650;width:100%;max-width:100%;margin:0;max-height:min(65.52vh,562px);max-height:min(65.52dvh,562px)}.content.prices-route .price-sheet[data-snap=peek]{height:var(--price-sheet-peek,124px)}.content.prices-route .price-sheet[data-snap=half]{height:min(59.28vh,530px);height:min(59.28dvh,530px)}}
 @media(min-width:801px){.content.prices-route .price-sheet{margin-left:auto;margin-right:auto}}
+
+/* Scrollable import previews on Safari 12 and narrow phones. */
+.modal-root{top:0;right:0;bottom:0;left:0}
+.modal-card{width:100%;max-width:520px;max-height:85vh;display:flex;flex-direction:column}
+.modal-body{overflow:auto;-webkit-overflow-scrolling:touch;min-height:0;overflow-wrap:break-word}
+.modal-body form{white-space:normal}.modal-body .field{margin-bottom:12px}
+.modal-actions{flex-shrink:0}.imported-details p{overflow-wrap:break-word;font-size:13px}

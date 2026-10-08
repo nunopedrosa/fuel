@@ -1,0 +1,8 @@
+'use strict';
+const fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('path');
+let current,db={transaction(names){const staged={};names.forEach(n=>staged[n]=Object.assign({},persisted[n]));current={objectStore(n){return {clear(){staged[n]={}},put(r){staged[n][r.id||r.key]=r}}},abort(){this.error=new Error('quota');this.onabort()},complete(){Object.assign(persisted,staged);this.oncomplete()}};return current}},persisted={vehicles:{old:{id:'old'}},fillups:{old:{id:'old'}},settings:{},promos:{keep:{id:'keep'}}};
+const indexedDB={open(){const request={result:db};queueMicrotask(()=>request.onsuccess());return request}};
+const context=vm.createContext({indexedDB,Promise});vm.runInContext(fs.readFileSync(path.join(__dirname,'../db.js'),'utf8')+'\nthis.FuelDB=FuelDB;',context);
+(async()=>{await context.FuelDB.open();assert.equal(typeof context.FuelDB.commitImport,'function');let done=false;
+const before=JSON.stringify(persisted);const p=context.FuelDB.commitImport({replace:true,vehicles:[{id:'new'}],fillups:[{id:'new'}],settings:[]});p.then(()=>done=true,()=>{});await Promise.resolve();assert.equal(done,false);current.abort();await assert.rejects(p);assert.equal(JSON.stringify(persisted),before);
+const q=context.FuelDB.commitImport({replace:true,vehicles:[{id:'new'}],fillups:[{id:'new'}],settings:[{key:'activeVehicle',value:'new'}]});current.complete();await q;assert.equal(persisted.vehicles.old,undefined);assert.equal(persisted.settings.activeVehicle.value,'new');assert.ok(persisted.promos.keep);console.log('atomic import checks passed');})().catch(e=>{console.error(e);process.exitCode=1});
