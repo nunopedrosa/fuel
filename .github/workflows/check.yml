@@ -24,6 +24,20 @@ jobs:
           for f in $(find js -name '*.js'); do node --check "$f"; done
       - name: No iOS 12-incompatible syntax
         run: '! grep -rnE "[A-Za-z_\]\)]\?\.[A-Za-z_\[]|\?\?|\.at\(|replaceAll|Object\.fromEntries" app.js db.js sw.js config.js js/'
+      - name: Import and data checks
+        run: |
+          node scripts/check-bplist.js
+          node scripts/check-data.js
+          node scripts/check-jerrycan.js
+          node scripts/check-import-transaction.js
+          node scripts/check-import-flow.js
+          node scripts/check-import-backup.js
+          node scripts/check-calc.js
+          node scripts/check-migrate.js
+          node scripts/check-providers.js
+          node scripts/check-sw-assets.js
+          node scripts/check-fuels.js
+          node scripts/check-promos.js
       - name: Validate manifest JSON
         run: python3 -m json.tool manifest.webmanifest >/dev/null
       - name: Only the station proxy may be PHP
@@ -33,3 +47,5 @@ jobs:
           php-version: '7.4'
       - name: Lint PHP
         run: php -l api/stations.php
+      - name: Station proxy checks
+        run: php -l api/stations-functions.php && php scripts/check-stations.php
