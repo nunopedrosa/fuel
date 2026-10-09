@@ -326,6 +326,21 @@ prompt. If the station price differs from an existing fill-up price, choose
 use the station price and recalculate the total. An empty price is filled
 automatically.
 
+The scanner recognises Portuguese commercial fuel names, including Galp
+Evologic/Extra, BP ACTIVE/Ultimate, Repsol Efitec/Diesel e+/e+10, PRIO TOP,
+and Moeve/Cepsa Óptima. Simple diesel remains Diesel B7; additive and premium
+diesel use the existing `DIESEL_PREMIUM` category. Petrol 95/98 have separate
+additivated options. These are broad categories, not claims about a brand's
+formula or a three-tier quality rating. Octane must be present for petrol;
+ECO Diesel requires confirmation because the name alone does not establish
+its biodiesel mixture. A product name can span two adjacent lines, but totals
+and unit prices are not used as octane hints. Review the suggested fuel before
+saving. The full text returned by OCR is placed in the fill-up notes, keeping its line
+breaks. You can edit it or use the circled X beside **Notes** to clear the field
+before saving. Clearing notes does not save automatically or alter other fields.
+The original product text is retained as `receiptFuelType` through
+editing and full JSON backup/restore; CSV does not include this field.
+
 The scanner recognises common Portuguese decimal commas and compares litres ×
 unit price with the receipt total. A mismatch is shown for review; receipts with
 other purchases may need correction. Images are not attached to the fill-up or

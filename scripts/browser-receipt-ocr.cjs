@@ -67,6 +67,7 @@ const server = http.createServer((req, res) => {
       ]);
       assert.equal(outcome, 'review', await page.locator('#modalRoot').textContent().catch(() => failures.join('\n')));
       if (process.env.FUELLOG_QA_RECEIPT) {
+        console.log('Suggested fuel:', await page.locator('#receiptReviewFuel').inputValue());
         console.log(await page.evaluate(() => (window.receiptOCRText || '').split('\n').filter(line => /[0-9].*(?:L\b|\/L)/i.test(line))));
         console.log(JSON.stringify(await page.locator('.receipt-review-grid input').evaluateAll(inputs => inputs.map(input => ({ field: input.id, value: input.value })))));
       } else {

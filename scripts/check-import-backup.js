@@ -35,13 +35,17 @@ const run = function (code) { return vm.runInContext(code, context); };
 
   const existing = {
     id: 'same', vehicleId: 'car', date: '2026-01-01T00:00:00.000Z', odometer: 1, litres: 2,
-    totalCost: 4, currency: 'EUR', fullTank: true
+    totalCost: 4, currency: 'EUR', fullTank: true, fuelId: 'PETROL_95_ADDITIVATED', receiptFuelType: 'PRIO TOP 95'
   };
   await run('state.vehicles=[{id:"car",name:"Car",currency:"EUR"}];state.fillups=[' + JSON.stringify(existing) + '];state.settings={activeVehicle:"car"};state.promos=[]');
   batch = null;
   context.dialogResults = [true];
   await run('importFuelLogBackup({format:"FuelLog",version:4,vehicles:[{id:"car",name:"Car",currency:"EUR"}],fillups:[' + JSON.stringify(existing) + ']},false)');
   assert.equal(batch.fillups.length, 0, 'identical fill-up on merge must be skipped');
+  context.dialogResults = [true];
+  await run('importFuelLogBackup(' + JSON.stringify({format: 'FuelLog', version: 4, vehicles: [{id: 'car', name: 'Car', currency: 'EUR'}], fillups: [existing]}) + ',true)');
+  assert.equal(batch.fillups[0].receiptFuelType, 'PRIO TOP 95', 'JSON restore preserves original receipt fuel description');
+  assert.equal(batch.fillups[0].fuelId, 'PETROL_95_ADDITIVATED');
 
   batch = null;
   context.dialogResults = [true];

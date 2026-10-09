@@ -93,6 +93,15 @@ function readFixture(name) {
   assert.equal(FP.byId('be-fps').capabilities.stationPrices, false);
   assert.equal(FP.byId('nl-cbs').capabilities.referencePrices, true);
 
+  FP.fetchJson = async function () { return { resultado: [
+    { Id: 3201, Descritivo: 'Gasolina simples 95' },
+    { Id: 3205, Descritivo: 'Gasolina especial 95' },
+    { Id: 3400, Descritivo: 'Gasolina 98' },
+    { Id: 3405, Descritivo: 'Gasolina especial 98' }
+  ] }; };
+  const ptFuels = await FP.byId('pt-dgeg').fuels();
+  assert.deepEqual(ptFuels.map(function (fuel) { return fuel.canonical; }), ['PETROL_95', 'PETROL_95_ADDITIVATED', 'PETROL_98', 'PETROL_98_ADDITIVATED']);
+
   FP.fetchJson = async function () { return readFixture('pt-dgeg-search.json'); };
   const pt = await FP.byId('pt-dgeg').searchStations({
     fuelKey: '2101', center: { lat: 38.72, lon: -9.14 }, radiusKm: 50

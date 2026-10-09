@@ -1,8 +1,8 @@
-const CACHE = 'fuellog-v37-station-price-confirm';
+const CACHE = 'fuellog-v39-receipt-notes';
 const ASSETS = [
   './',
   'index.html',
-  'styles.css?v=44',
+  'styles.css?v=45',
   'config.js',
   'db.js',
   'js/data.js',

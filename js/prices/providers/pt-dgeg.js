@@ -1,7 +1,7 @@
 // FuelLog provider: Portugal — DGEG station directory and current pump prices.
 window.FuelProviders.register((function () {
   var FP = window.FuelProviders;
-  var CANON = { 2101: 'DIESEL_B7', 2105: 'DIESEL_PREMIUM', 3201: 'PETROL_95', 3205: 'PETROL_95', 3400: 'PETROL_98', 3405: 'PETROL_98', 1120: 'LPG', 1143: 'CNG', 1141: 'CNG', 1142: 'LNG' };
+  var CANON = { 2101: 'DIESEL_B7', 2105: 'DIESEL_PREMIUM', 3201: 'PETROL_95', 3205: 'PETROL_95_ADDITIVATED', 3400: 'PETROL_98', 3405: 'PETROL_98_ADDITIVATED', 1120: 'LPG', 1143: 'CNG', 1141: 'CNG', 1142: 'LNG' };
   var UNITS = { 1143: 'kg', 1141: 'm3', 1142: 'kg' };
   var ID = 'pt-dgeg';
   function base() {

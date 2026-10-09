@@ -5,8 +5,27 @@ var vm = require('vm');
 var assert = require('assert');
 
 var window = {};
+var fuelContext = { window: window, FuelProviders: { norm: function (text) { return String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } } };
+vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../js/prices/fuels.js'), 'utf8'), fuelContext);
 vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../js/receipt.js'), 'utf8'), { window: window }, { filename: 'receipt.js' });
 var R = window.FuelLogReceipt;
+var rawOCR = '\n  GASOLEO EVOLOGIC\nTexto & acentuação ç\n';
+assert.equal(R.parse(rawOCR).ocrText, rawOCR, 'retain the exact OCR text, including whitespace and line breaks');
+[
+  ['GASOLEO EVOLOGIC', 'DIESEL_PREMIUM'],
+  ['GASOLEO\nEVOLOGIC', 'DIESEL_PREMIUM'],
+  ['Gasolina\nEfitec 95', 'PETROL_95_ADDITIVATED'],
+  ['PRIO TOP 95', 'PETROL_95_ADDITIVATED'],
+  ['BP Ultimate 98', 'PETROL_98_ADDITIVATED'],
+  ['Diesel e+10', 'DIESEL_PREMIUM'],
+  ['Repsol AutoGás', 'LPG']
+].forEach(function (row) {
+  var result = R.parse(row[0] + '\nLitros 20,00\nTOTAL 40,00');
+  assert.equal(result.fuelId, row[1], 'receipt fuel: ' + row[0]);
+});
+assert.equal(R.parse('Gasolina\nTOTAL 95,00').fuelId, null, 'total must not supply octane');
+assert.equal(R.parse('POSTO GALP\nTOTAL 40,00').fuelId, null, 'brand alone cannot identify fuel');
+assert.equal(R.parse('ECO DIESEL').fuelId, null, 'Eco Diesel must not imply a biodiesel mixture');
 var parsed = R.parse([
   'POSTO TREKM LISBOA',
   'Data: 09/10/2026 08:42',

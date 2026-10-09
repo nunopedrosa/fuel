@@ -38,6 +38,10 @@ BigInt typed arrays. A direct same-origin worker uses the separate CSP in
 are permitted inside that worker, while the page retains its strict script CSP.
 Portuguese language model is cached by Tesseract in IndexedDB after its first
 online download. Offline scanning requires that first download to have completed.
+The notes clear button uses a native button with a 44 px touch target and a
+plain CSS circle; its heading uses flex layout without requiring flex-gap.
+Commercial fuel matching uses a small local set of regular expressions and checks
+at most one adjacent line per product; it adds no runtime dependency or network request.
 The iPhone 6 has limited memory, so OCR may be slow or fail on large/unclear
 photos; users can still enter a fill-up manually. This code path needs physical
 Safari 12 and Home Screen testing before compatibility can be confirmed.

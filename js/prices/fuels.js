@@ -2,12 +2,14 @@
 window.FuelLogFuels = (function () {
   var LIST = [
     { id: 'PETROL_95', label: 'Petrol 95' },
+    { id: 'PETROL_95_ADDITIVATED', label: 'Petrol 95 (additivated)' },
     { id: 'PETROL_95_E5', label: 'Petrol 95 E5' },
     { id: 'PETROL_95_E10', label: 'Petrol 95 E10' },
     { id: 'PETROL_98', label: 'Petrol 98' },
+    { id: 'PETROL_98_ADDITIVATED', label: 'Petrol 98 (additivated / premium)' },
     { id: 'DIESEL_B7', label: 'Diesel B7' },
     { id: 'DIESEL_B10', label: 'Diesel B10' },
-    { id: 'DIESEL_PREMIUM', label: 'Premium diesel' },
+    { id: 'DIESEL_PREMIUM', label: 'Additivated / premium diesel' },
     { id: 'LPG', label: 'LPG' },
     { id: 'CNG', label: 'CNG' },
     { id: 'LNG', label: 'LNG' },
@@ -16,6 +18,8 @@ window.FuelLogFuels = (function () {
   ];
   var RELATED = {
     PETROL_95: ['PETROL_95_E10', 'PETROL_95_E5'],
+    PETROL_95_ADDITIVATED: ['PETROL_95', 'PETROL_95_E5', 'PETROL_95_E10'],
+    PETROL_98_ADDITIVATED: ['PETROL_98'],
     PETROL_95_E5: ['PETROL_95', 'PETROL_95_E10'],
     PETROL_95_E10: ['PETROL_95', 'PETROL_95_E5'],
     PETROL_98: [],
@@ -66,7 +70,7 @@ window.FuelLogFuels = (function () {
   }
   function norm(text) {
     var s = FuelProviders && FuelProviders.norm ? FuelProviders.norm(text) : String(text == null ? '' : text).toLowerCase();
-    return s;
+    return s.replace(/ev[o0]\s*l[o0]g[i1]c/g, 'evologic').replace(/\b(evologic|ultimate|active|efitec|top|optima)(95|98)\b/g, '$1 $2');
   }
   function guess(text) {
     var t = norm(text);
@@ -76,15 +80,23 @@ window.FuelLogFuels = (function () {
     if (/gnl|lng|gas natural licuado|liquefeito|liquefied/.test(t)) return 'LNG';
     if (/gnc|cng|gas natural comprimido|compressed natural/.test(t)) return 'CNG';
     if (/gpl|lpg|autogas|glp|gases licuados|liquefied petroleum/.test(t)) return 'LPG';
-    if (/98/.test(t)) return 'PETROL_98';
-    if (/95/.test(t) && /e10/.test(t)) return 'PETROL_95_E10';
-    if (/95/.test(t) && /e5/.test(t)) return 'PETROL_95_E5';
-    if (/95|sp95|euro95|gasolina|essence|benzine|benzina|petrol|gasoline|mogas/.test(t)) return 'PETROL_95';
+    var special = /\b(aditivad[oa]s?|especial|premium|evologic|excellium|ultimate|active|evolution|supreme|v.?power|efitec|neotech|top|optima)\b|\be\s*\+/.test(t);
+    if (/\bsimples\b/.test(t)) special = false;
     if (/diesel|gasoleo|gazole|gasoil|gasolio|motorina|gasoleo/.test(t)) {
-      if (/especial|premium|excellium|ultimate|evolution|supreme|v.?power|efitec/.test(t)) return 'DIESEL_PREMIUM';
-      if (/b10/.test(t)) return 'DIESEL_B10';
+      // ECO is a distinct biofuel product; its name does not specify B7/B10.
+      if (/\beco\s*diesel\b/.test(t)) return null;
+      if (special) return 'DIESEL_PREMIUM';
+      if (/\bb10\b/.test(t)) return 'DIESEL_B10';
       return 'DIESEL_B7';
     }
+    if (/(?:^|[^\d.,])98(?:$|[^\d.,])/.test(t)) return special ? 'PETROL_98_ADDITIVATED' : 'PETROL_98';
+    if (/(?:^|[^\d.,])(?:95|sp95|euro95)(?:$|[^\d.,])/.test(t)) {
+      if (special) return 'PETROL_95_ADDITIVATED';
+      if (/e10/.test(t)) return 'PETROL_95_E10';
+      if (/e5/.test(t)) return 'PETROL_95_E5';
+      return 'PETROL_95';
+    }
+    if (/gasolina|essence|benzine|benzina|petrol|gasoline|mogas/.test(t)) return null;
     return null;
   }
   return { LIST: LIST, label: label, related: related, guess: guess, present: present, optionLabels: optionLabels };

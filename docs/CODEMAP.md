@@ -54,11 +54,17 @@ source policies are documented in [PROVIDERS.md](PROVIDERS.md).
 - **Receipt scan:** camera or photo-library input → bounded image resize/contrast →
   direct same-origin Tesseract worker (its response CSP is in
   `vendor/tesseract/.htaccess`) → Portuguese receipt parser and amount check → editable
-  review (no station-name extraction) → existing fill-up form and IndexedDB save.
+  review with commercial-fuel matching via `FuelLogFuels.guess` (no station-name extraction) → existing fill-up form and IndexedDB save.
   Station Find confirms a different existing unit price before replacing it;
   equal prices and retained prices preserve the total. Automatic cached-station
   prefill preserves any existing price without a prompt. Photos are discarded;
   worker/core assets and the language model are cached locally after first use.
+  `FuelLogReceipt.parse` returns `ocrText` unchanged; receipt review copies it
+  into fill-up notes. `fillClearNotes` in `wireCommon` clears only the editable
+  notes field; the existing save handler persists its full text.
+  The original fuel product text is retained in `receiptFuelType`; the chosen
+  canonical ID remains in `fuelId`. Portuguese special 95/98 provider codes map
+  to the corresponding additivated petrol options.
 - **Imports:** `importData` → binary header detection or JSON/delimited parsing
   → Jerrycan controls or generic mode controls → normalization/validation →
   preview and duplicates → `FuelDB.commitImport` → `refresh` → `render`.

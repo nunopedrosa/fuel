@@ -48,9 +48,9 @@
 
   function parse(text) {
     var lines = String(text || '').split(/\r?\n/).map(function (line) { return line.trim(); }).filter(Boolean);
-    var result = { station: '', date: null, fuelType: '', litres: null, pricePerLitre: null, totalCost: null, amountsMatch: null, warnings: [] };
+    var result = { ocrText: String(text || ''), station: '', date: null, fuelType: '', fuelId: null, litres: null, pricePerLitre: null, totalCost: null, amountsMatch: null, warnings: [] };
     var datePattern = /(?:data|date|\b\d{1,2}[/.\-]\d{1,2}[/.\-]\d{2,4}\b|\b\d{4}-\d{1,2}-\d{1,2}\b)/i;
-    var fuelPattern = /(gas[oó]leo|diesel|gasolina|petrol|gpl|lpg)/i;
+    var fuelPattern = /(gas[oó]leo|diesel|gasolina|petrol|gpl|lpg|autog[aá]s|ev[o0]\s*l[o0]g[i1]c|ultimate|efitec|\btop\s*(?:95|98)\b|[oó]ptima)/i;
     var litrePattern = /(litros?|litres?|\d\s*L\b|\bL\b)/i;
     var pricePattern = /(pre[cç]o\s*\/?\s*l|price\s*\/?\s*l|€\s*\/?\s*l|eur\s*\/?\s*l|\/?\s*l\s*€)/i;
     var totalPattern = /(total|valor\s*(?:a\s*pagar)?|amount\s*due)/i;
@@ -58,7 +58,14 @@
     for (var i = 0; i < lines.length; i++) {
       var line = lines[i];
       if (!result.date && datePattern.test(line)) result.date = parseDate(line);
-      if (!result.fuelType && fuelPattern.test(line)) result.fuelType = line;
+      if (!result.fuelType && fuelPattern.test(line)) {
+        result.fuelType = line;
+        // Product names may wrap onto one following line. Do not take octane
+        // or variant hints from totals, quantities, prices or unrelated text.
+        var next = lines[i + 1] || '';
+        if (next.length <= 80 && !/(total|litros?|litres?|pre[cç]o|€|eur|\d\s*L\b|\d:\d)/i.test(next) && /^(?:(?:gas[oó]leo|diesel|gasolina|petrol)\b.*|(?:ev[o0]\s*l[o0]g[i1]c|ultimate|active|efitec|top|[oó]ptima|neotech|simples|aditivad[oa]|especial)\b.*|(?:95|98)(?:\s+.*)?)$/i.test(next)) result.fuelType += ' ' + next;
+        if (root.FuelLogFuels) result.fuelId = root.FuelLogFuels.guess(result.fuelType);
+      }
       if (result.litres == null && litrePattern.test(line)) {
         // OCR often joins the unit to its number (40,06L). Restrict spaced
         // digit groups to thousands so a preceding product code cannot join it.
@@ -69,6 +76,7 @@
       if (result.pricePerLitre == null && pricePattern.test(line)) result.pricePerLitre = labelledAmount(line, /(\d[\d\s.,]*\d|\d)\s*(?:€|EUR)?\s*\/\s*L/i) || lastAmount(line);
       if (result.totalCost == null && totalPattern.test(line)) result.totalCost = lastAmount(line);
     }
+    if (result.fuelType && !result.fuelId) result.warnings.push('Fuel could not be identified confidently. Confirm the fuel type; do not infer octane or biodiesel content from the product name.');
     if (result.litres != null && result.pricePerLitre != null && result.totalCost != null) {
       var expected = result.litres * result.pricePerLitre;
       result.amountsMatch = Math.abs(expected - result.totalCost) <= Math.max(0.05, result.totalCost * 0.01);
