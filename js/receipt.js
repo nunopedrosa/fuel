@@ -54,7 +54,6 @@
     var litrePattern = /(litros?|litres?|\d\s*L\b|\bL\b)/i;
     var pricePattern = /(pre[cç]o\s*\/?\s*l|price\s*\/?\s*l|€\s*\/?\s*l|eur\s*\/?\s*l|\/?\s*l\s*€)/i;
     var totalPattern = /(total|valor\s*(?:a\s*pagar)?|amount\s*due)/i;
-    var skipStation = /(data|date|total|litros?|litres?|pre[cç]o|price|€|eur|gas[oó]leo|diesel|gasolina|petrol|gpl|lpg|fatura|recibo|nif|contribuinte)/i;
 
     for (var i = 0; i < lines.length; i++) {
       var line = lines[i];
@@ -69,7 +68,6 @@
       }
       if (result.pricePerLitre == null && pricePattern.test(line)) result.pricePerLitre = labelledAmount(line, /(\d[\d\s.,]*\d|\d)\s*(?:€|EUR)?\s*\/\s*L/i) || lastAmount(line);
       if (result.totalCost == null && totalPattern.test(line)) result.totalCost = lastAmount(line);
-      if (!result.station && !skipStation.test(line) && !/\d{4,}/.test(line)) result.station = line;
     }
     if (result.litres != null && result.pricePerLitre != null && result.totalCost != null) {
       var expected = result.litres * result.pricePerLitre;

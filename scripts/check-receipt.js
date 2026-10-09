@@ -16,7 +16,7 @@ var parsed = R.parse([
   'TOTAL EUR 51,32'
 ].join('\n'));
 
-assert.equal(parsed.station, 'POSTO TREKM LISBOA');
+assert.equal(parsed.station, '', 'receipt text must never be used to guess the station');
 assert.equal(parsed.date, '2026-10-09T08:42');
 assert.equal(parsed.fuelType, 'Gasoleo simples');
 assert.equal(parsed.litres, 32.5);
@@ -42,4 +42,51 @@ assert.equal(attachedUnit.pricePerLitre, 2.319, 'keep the printed unit price rat
 assert.equal(attachedUnit.totalCost, 87.9);
 assert.equal(attachedUnit.amountsMatch, false, 'a discounted total must prompt review instead of silently changing the price');
 assert.equal(R.parse('POSTO X\nPreco/L 1,60€/L').litres, null, 'a unit-price marker is not a purchased quantity');
-console.log('Receipt parser checks passed');
+async function checkStationPrices() {
+  var context = vm.createContext({ window: {}, Date: Date, Intl: Intl, console: console, navigator: { userAgent: '' }, document: { querySelector: function () { return null; } }, FuelLogPromos: { DEFAULT_FILL_LITRES: 40 } });
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '../app.js'), 'utf8').replace(/init\(\)\.catch[\s\S]*$/, ''), context);
+  vm.runInContext("state.priceCountry = 'PT'", context);
+  var prompts = [], answer = false;
+  context.appDialog = function (options) { prompts.push(options); return Promise.resolve(answer); };
+  context.fillPromoPrice = function (station) { return { price: station.price == null ? '' : String(station.price), notes: '' }; };
+  function form(price) {
+    var ff = {};
+    var values = { vehicleId: 'v', fuelId: '', station: '', stationId: '', country: '', pricePerLitre: price, totalCost: '87.90', litres: '40.06', notes: '' };
+    Object.keys(values).forEach(function (key) { ff[key] = { value: values[key] }; });
+    ff.pricePerLitre.oninput = function () { ff.totalCost.value = context.fillTotalFromLitresPrice(ff.litres.value, ff.pricePerLitre.value); };
+    return ff;
+  }
+  var station = { name: 'Selected station', id: 'station-1', country: 'PT', price: 2.319 };
+  var ff = form('2.3190');
+  await context.pickStationForFill(ff, station);
+  assert.equal(prompts.length, 0, 'numerically identical station price must not prompt');
+  assert.equal(ff.pricePerLitre.value, '2.3190', 'equal price must remain untouched');
+  assert.equal(ff.totalCost.value, '87.90', 'equal price must preserve the scanned discounted total');
+  ff = form('2.100');
+  await context.pickStationForFill(ff, station);
+  assert.equal(prompts.length, 1, 'different existing price must prompt');
+  assert.equal(ff.station.value, 'Selected station', 'keeping price must still select the station');
+  assert.equal(ff.stationId.value, 'station-1');
+  assert.equal(ff.pricePerLitre.value, '2.100');
+  assert.equal(ff.totalCost.value, '87.90');
+  answer = true;
+  await context.pickStationForFill(ff, station);
+  assert.equal(ff.pricePerLitre.value, '2.319');
+  assert.equal(ff.totalCost.value, '92.90', 'explicit replacement recalculates total');
+  ff = form('');
+  var count = prompts.length;
+  await context.pickStationForFill(ff, station);
+  assert.equal(prompts.length, count, 'empty price can be filled without confirmation');
+  assert.equal(ff.pricePerLitre.value, '2.319');
+  ff = form('2.100');
+  await context.pickStationForFill(ff, station, { confirmPrice: false });
+  assert.equal(prompts.length, count, 'background cached-station prefill must not open a dialog');
+  assert.equal(ff.pricePerLitre.value, '2.100', 'background prefill must preserve an existing price');
+  assert.equal(ff.totalCost.value, '87.90');
+  ff = form('2.100');
+  await context.pickStationForFill(ff, { name: 'Unpriced station', id: 'station-2' });
+  assert.equal(ff.pricePerLitre.value, '2.100');
+  assert.equal(ff.totalCost.value, '87.90', 'an unpriced station must not recalculate a recorded total');
+  console.log('Receipt parsing and station price preservation checks passed');
+}
+checkStationPrices().catch(function (error) { console.error(error); process.exitCode = 1; });

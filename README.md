@@ -316,10 +316,15 @@ provenance. JSON backups preserve both fields; CSV preserves only the fraction.
 ### Scan a fuel receipt
 
 On Home, use **Scan** to take a receipt photo or **Photos** to choose an existing
-image. FuelLog reads the image on the device and suggests the station, date,
-fuel type, litres, unit price and total. Review and correct those values before
+image. FuelLog reads the image on the device and suggests the date,
+fuel type, litres, unit price and total. The station is not read from the receipt;
+enter it manually or use **Find** on the fill-up form. Review and correct those values before
 they are placed in the normal fill-up form. Odometer and tank fullness still
-need your confirmation.
+need your confirmation. **Find** keeps an identical price per litre without a
+prompt. If the station price differs from an existing fill-up price, choose
+**Keep current price** to preserve the price and total, or **Replace price** to
+use the station price and recalculate the total. An empty price is filled
+automatically.
 
 The scanner recognises common Portuguese decimal commas and compares litres ×
 unit price with the receipt total. A mismatch is shown for review; receipts with
