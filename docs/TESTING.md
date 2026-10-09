@@ -50,7 +50,7 @@ or physical iPhone 6 compatibility.
 The receipt form handoff can be checked with `node scripts/browser-receipt.cjs`
 against the same local server. It stubs only the OCR result and exercises photo
 selection, editable review, station Find with equal/different prices, keep/replace
-choices, commercial-fuel review, full OCR notes, the touch-sized clear-notes button,
+choices, commercial-fuel review, computed editing-font sizes in receipt review and the fill-up form, full OCR notes, the touch-sized clear-notes button,
 IndexedDB save, editing and JSON export; it does
 not test OCR accuracy or the remote language-model download.
 

@@ -22,6 +22,9 @@ FuelLog relies on capabilities available on that target:
 - Station-price search requires choosing a region before downloading results when the response would be nationwide: Portugal in direct mode on legacy iOS, and Spain always in direct mode (proxy disabled or unavailable). With the proxy enabled, only nearby stations are downloaded and no region is needed. This avoids loading several thousand stations into a 1 GB device.
 - Generated-file downloads use an iOS 12 fallback. The export is opened locally in Safari and can be saved/copied using the Share sheet.
 - CSS includes fallbacks for missing flex-gap and prefixes `backdrop-filter`.
+- Shared `.field` inputs, selects and textareas use 16 px editing text, including
+  receipt review dialogs, to retain the iPhone focus-zoom protection. The compact
+  fill-up form also uses 16 px controls. The viewport keeps user pinch zoom enabled.
 - Prices map uses an absolute-fill Leaflet container (Safari 12 flex + `height:100%` otherwise leaves a zero-height map). On iOS 12, hybrid tile layers omit `crossOrigin` on tiles; if the custom layer fails, OpenStreetMap.de tiles are used as a fallback.
 
 The optional urban-driving input uses a native range slider (0–100%) and checkbox,

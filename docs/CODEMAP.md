@@ -35,7 +35,7 @@ adapters, Leaflet, data/import modules, then the application.
 | Map and Prices bottom sheet | [app.js](../app.js), [styles.css](../styles.css) | `ensureMap`, `updateMap`, `popupHtml`, `wirePriceSheet`, `setPriceSheetSnap`, `syncPriceMapSize` |
 | Offline maps and search history | [js/prices/offline-tiles.js](../js/prices/offline-tiles.js), [db.js](../db.js), [app.js](../app.js) | `FuelLogOfflineTiles`, `putMapTile`, `getMapTile`, `evictMapTiles`, `archivePriceSearch`, `restorePriceSearchFromArchive` |
 | App shell, updates and installation | [sw.js](../sw.js), [manifest.webmanifest](../manifest.webmanifest), [index.html](../index.html) | `CACHE`, `ASSETS`, service-worker handlers; registration and install UI in `init` |
-| Styling and old-Safari behaviour | [styles.css](../styles.css), [COMPATIBILITY.md](../COMPATIBILITY.md) | Layout fallbacks; `FuelProviders.legacyIOS`, `download`, regional search paths |
+| Styling and old-Safari behaviour | [styles.css](../styles.css), [COMPATIBILITY.md](../COMPATIBILITY.md) | Layout fallbacks and shared 16 px `.field` editing controls; `FuelProviders.legacyIOS`, `download`, regional search paths |
 | Checks | [.github/workflows/check.yml](../.github/workflows/check.yml), [docs/TESTING.md](TESTING.md), [scripts/check-*.js](../scripts/) | Syntax/iOS-12 scan, manifest/PHP proxy; Node/PHP regression scripts (see TESTING.md) |
 
 Country adapters are in `js/prices/providers/`: `pt-dgeg.js`, `es-minetur.js`,

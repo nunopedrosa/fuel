@@ -21,10 +21,17 @@ const base = process.env.FUELLOG_QA_URL || 'http://127.0.0.1:8765';
     });
     await page.locator('#receiptLibrary').setInputFiles({ name: 'receipt.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('local test image') });
     await page.getByRole('heading', { name: 'Review receipt values' }).waitFor();
+    async function assertEditingFontSizes(selector) {
+      const sizes = await page.locator(selector).evaluateAll(fields => fields.map(field => ({ name: field.id || field.name, size: parseFloat(getComputedStyle(field).fontSize) })));
+      assert.ok(sizes.length > 0);
+      sizes.forEach(field => assert.ok(field.size >= 16, field.name + ' has a ' + field.size + 'px editing font; keep the iPhone focus-zoom protection'));
+    }
+    await assertEditingFontSizes('.receipt-review-grid input, .receipt-review-grid select');
     assert.equal(await page.locator('#receiptReviewStation').inputValue(), '');
     assert.equal(await page.locator('#receiptReviewFuel').inputValue(), 'DIESEL_PREMIUM');
     await page.getByRole('button', { name: 'Use values' }).click();
     await page.locator('#fillForm').waitFor();
+    await assertEditingFontSizes('#fillForm input:not([type="hidden"]):not([type="checkbox"]):not([type="range"]), #fillForm select, #fillForm textarea');
     assert.equal(await page.locator('#fillStation').inputValue(), '');
     const rawOCR = 'GASOLEO\nEVOLOGIC\n09/10/2026 08:42\nLitros 30,00\n1,600 EUR/L\nTOTAL 48,00\n  OCR <text> & ç\n';
     assert.equal(await page.locator('#fillForm [name="notes"]').inputValue(), rawOCR);

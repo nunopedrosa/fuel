@@ -1,8 +1,8 @@
-const CACHE = 'fuellog-v39-receipt-notes';
+const CACHE = 'fuellog-v40-form-focus-fonts';
 const ASSETS = [
   './',
   'index.html',
-  'styles.css?v=45',
+  'styles.css?v=46',
   'config.js',
   'db.js',
   'js/data.js',
