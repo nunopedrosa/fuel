@@ -27,6 +27,7 @@ php scripts/check-stations.php
 | `check-sw-assets.js` | `sw.js` ASSETS vs disk and `index.html` scripts |
 | `check-fuels.js` | Fuel catalogue matching |
 | `check-promos.js` | Promo stacking rules |
+| `check-receipt.js` | Portuguese receipt parsing and field validation |
 | `check-stations.php` | Station proxy index build, radius search, request validation |
 
 Fixtures for providers live in `scripts/fixtures/providers/`.
@@ -45,6 +46,11 @@ shortcuts, currency switching, tap/keyboard inspection, expanded linked zoom,
 focus restoration, reduced motion, empty history and offline reload/interaction.
 It is separate from the dependency-free Node checks and is not proof of Safari 12
 or physical iPhone 6 compatibility.
+
+The receipt form handoff can be checked with `node scripts/browser-receipt.cjs`
+against the same local server. It stubs only the OCR result and exercises photo
+selection, editable review, the existing fill-up form and IndexedDB save; it does
+not test OCR accuracy or the remote language-model download.
 
 ## Consumption diagnostic checklist
 

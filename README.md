@@ -313,6 +313,27 @@ unless adjusted. Internally, `cityPercentage` stores a fraction from 0 to 1;
 manual changes set `cityPercentageSource` to `user` without replacing import
 provenance. JSON backups preserve both fields; CSV preserves only the fraction.
 
+### Scan a fuel receipt
+
+On Home, use **Scan** to take a receipt photo or **Photos** to choose an existing
+image. FuelLog reads the image on the device and suggests the station, date,
+fuel type, litres, unit price and total. Review and correct those values before
+they are placed in the normal fill-up form. Odometer and tank fullness still
+need your confirmation.
+
+The scanner recognises common Portuguese decimal commas and compares litres ×
+unit price with the receipt total. A mismatch is shown for review; receipts with
+other purchases may need correction. Images are not attached to the fill-up or
+uploaded. The photo is resized before OCR and discarded after the scan.
+
+The OCR engine and WebAssembly core are loaded from the app when first used and
+then cached by the service worker. The Portuguese language model is fetched from
+the Tesseract language-data host the first time a scan runs online; Tesseract
+caches it in browser storage for later offline scans. A first-ever scan while
+offline therefore needs the language model to have been cached already.
+Scanning is optional and may be slow or unavailable on an iPhone 6; manual
+entry remains available.
+
 ## Exploring Fill analysis
 
 On Home, **Period position** moves the analysis window through your vehicle's
@@ -919,7 +940,7 @@ Location permission belongs to the browser/operating system. When the station pr
 
 `api/stations.php` is an optional, dependency-free PHP 7.4+ endpoint intended for the DreamHost deployment. It is enabled by default via `stationProxy` in `config.js`; set it to `null` for a purely static host such as GitHub Pages.
 
-The proxy serves the Portuguese (`pt-dgeg`, one file per fuel type) and Spanish (`es-minetur`, a single ~10 MB nationwide dataset refreshed hourly on the server) providers. It fetches the upstream data at most once per hour, stores it in `api/cache/` as a 0.1° grid index, and answers `POST {provider, fuel, lat, lon, radius}` queries with the stations inside the radius. Phones therefore download only nearby stations instead of a multi-megabyte nationwide response. It accepts only same-origin POST requests, is not an open relay (the upstream URL is fixed and the only parameters are fuel, coordinates and radius), and never logs or persists the request coordinates. If the proxy fails, the app warns and falls back to querying the provider directly (where a direct mode exists).
+The proxy serves the Portuguese (`pt-dgeg`, one file per fuel type) and Spanish (`es-minetur`, a single ~8 MB nationwide dataset refreshed hourly on the server) providers. It fetches the upstream data at most once per hour, stores it in `api/cache/` as a 0.1° grid index, and answers `POST {provider, fuel, lat, lon, radius}` queries with the stations inside the radius. Phones therefore download only nearby stations instead of a multi-megabyte nationwide response. It accepts only same-origin POST requests, is not an open relay (the upstream URL is fixed and the only parameters are fuel, coordinates and radius), and never logs or persists the request coordinates. If the proxy fails, the app warns and falls back to querying the provider directly (where a direct mode exists).
 
 ## Price accuracy
 

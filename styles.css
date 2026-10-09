@@ -240,3 +240,5 @@ html.legacy-ios .content.prices-route #stationMap{min-height:180px}
 .analysis-warnings{font-size:12px;color:#795629;line-height:1.5;margin-top:12px}
 .analysis-warnings summary{cursor:pointer;min-height:32px}
 .analysis-warnings p{margin:6px 0}
+
+.dashboard-fill-actions{flex-wrap:wrap;justify-content:flex-start}.receipt-review-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.receipt-warning{padding:10px 12px;border-left:3px solid #d97706;background:#fffbeb;color:#78350f;font-size:13px}@media(max-width:420px){.receipt-review-grid{grid-template-columns:1fr}}

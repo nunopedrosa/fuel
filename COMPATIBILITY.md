@@ -28,6 +28,16 @@ The optional urban-driving input uses a native range slider (0–100%) and check
 with a 44 px touch area and text labels. It requires no new browser APIs or runtime
 dependencies and is included in the offline app shell.
 
+Receipt scanning uses a file input that supports camera capture and photo-library
+selection. OCR is lazy-loaded into one Web Worker, the image is limited to 8 MB
+and downscaled to a 1280 px longest edge before recognition, and the worker is
+terminated after each scan. The local worker/core are cached after first use; the
+Portuguese language model is cached by Tesseract in IndexedDB after its first
+online download. Offline scanning requires that first download to have completed.
+The iPhone 6 has limited memory, so OCR may be slow or fail on large/unclear
+photos; users can still enter a fill-up manually. This code path needs physical
+Safari 12 and Home Screen testing before compatibility can be confirmed.
+
 The analysis explorer uses ordinary SVG, native range inputs, click/touch taps,
 keyboard inspection and a custom accessible expanded dialog. Zoom buttons avoid
 requiring pinch or modern Pointer Events. Chart output is capped at 160 observations

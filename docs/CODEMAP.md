@@ -22,6 +22,7 @@ adapters, Leaflet, data/import modules, then the application.
 | Shared data semantics | [js/data.js](../js/data.js) | `FuelLogData.intervals`, `currency`, `sourceKey`, `amountsByCurrency` |
 | Consumption and cost calculations | [app.js](../app.js) | `vehicleFillups`, `calcMetrics`, `consumptionSeries`, `priceSeries` |
 | Fill-up and vehicle editing | [app.js](../app.js) | `fillForm`, `urbanProfileField`, `wireUrbanProfile`, fill-up submit handler in `wireCommon`, `vehicleDialog`, `wireVehicleForm` |
+| Receipt scanning and OCR parsing | [js/receipt.js](../js/receipt.js), [js/receipt-ocr.js](../js/receipt-ocr.js), [app.js](../app.js) | `FuelLogReceipt.parse`, `FuelLogReceiptOCR.scan`, receipt review and existing fill-up form |
 | Import parsing and validation | [app.js](../app.js) | `importData`, `readFileText`, `extractRowsFromJson`, `parseDelimited`, `guessDelimiter`, `flexDate`, `flexNum`, `flexBool`, `rowValue` |
 | Import persistence and duplicates | [app.js](../app.js) | `importGenericRows`, `ensureVehicleByName`, `importFuelLogBackup` |
 | Backup and export | [app.js](../app.js) | `exportJson`, `exportCsv`, `download` |
@@ -50,6 +51,10 @@ source policies are documented in [PROVIDERS.md](PROVIDERS.md).
   seconds/milliseconds. The urban slider writes `cityPercentage` only when changed,
   preserves untouched imported precision and marks manual changes with
   `cityPercentageSource: "user"`. Review both when adding metadata.
+- **Receipt scan:** camera or photo-library input → bounded image resize/contrast →
+  local Tesseract worker → Portuguese receipt parser and amount check → editable
+  review → existing fill-up form and IndexedDB save. Photos are discarded;
+  worker/core assets and the language model are cached locally after first use.
 - **Imports:** `importData` → binary header detection or JSON/delimited parsing
   → Jerrycan controls or generic mode controls → normalization/validation →
   preview and duplicates → `FuelDB.commitImport` → `refresh` → `render`.

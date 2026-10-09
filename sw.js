@@ -1,8 +1,8 @@
-const CACHE = 'fuellog-v34-analysis-explorer';
+const CACHE = 'fuellog-v35-receipt-scan';
 const ASSETS = [
   './',
   'index.html',
-  'styles.css?v=43',
+  'styles.css?v=44',
   'config.js',
   'db.js',
   'js/data.js',
@@ -10,6 +10,8 @@ const ASSETS = [
   'js/import/jerrycan.js',
   'js/analysis.js',
   'js/analysis-ui.js',
+  'js/receipt.js',
+  'js/receipt-ocr.js',
   'app.js',
   'manifest.webmanifest',
   'icons/icon.svg',

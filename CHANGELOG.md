@@ -12,6 +12,7 @@
 
 ### Features
 
+- Added optional on-device fuel receipt scanning from the camera or photo library. Portuguese receipt values can be reviewed and corrected before the existing fill-up save; OCR assets are cached locally, and receipt photos are discarded.
 - Brand promos can be cumulative or exclusive. Matching cumulative promos stack, and the station headline is the better of that stack and the best exclusive promo. When both apply, the other is shown on a second line. Promos saved without the flag are treated as cumulative.
 
 - Added an optional same-origin PHP proxy (`api/stations.php`) that caches DGEG station lists per fuel type for one hour and answers radius searches, so clients download only nearby stations.

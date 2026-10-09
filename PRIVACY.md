@@ -11,6 +11,7 @@ FuelLog is local-first.
   - Belgium (FPS Economy/Statbel) and Netherlands (CBS): nothing but the request itself is sent; the responses are national reference prices.
 - On the Prices page, the map is always visible. While online, the user can choose a map style (OpenTopoMap, OpenStreetMap mirrors, etc.); tile requests go to that provider. Low-zoom terrain tiles are bundled in the app; additional tiles viewed online may be stored locally in IndexedDB (`mapTiles`, capped) per provider. Offline mode uses bundled/cache tiles only. Station search snapshots may be kept in IndexedDB for offline display. Map style and centre preference are stored in settings on the device.
 - Exported JSON/CSV files are created locally in the browser. Imported files are read locally.
+- Receipt photos are processed locally and discarded after OCR; they are not stored with fill-ups or uploaded. On the first scan, the browser downloads the Portuguese OCR language model from the Tesseract language-data host; the model is cached locally for later offline use. No receipt image or extracted fill-up data is sent with that download.
 
 ## User responsibility
 
