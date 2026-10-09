@@ -45,3 +45,21 @@ shortcuts, currency switching, tap/keyboard inspection, expanded linked zoom,
 focus restoration, reduced motion, empty history and offline reload/interaction.
 It is separate from the dependency-free Node checks and is not proof of Safari 12
 or physical iPhone 6 compatibility.
+
+## Consumption diagnostic checklist
+
+See [ANALYSIS.md](ANALYSIS.md). When investigating a spike, verify the full-to-full
+anchors, accumulated partial litres, odometer difference and imported tank flags.
+Distinguish the last completed consumption interval from the latest purchase.
+
+Relevant existing checks: `check-data.js`, `check-calc.js`, `check-analysis.js`,
+`check-analysis-ui.js` and `check-jerrycan.js`. For future changes, cover a trailing
+partial fill after completed intervals: it must leave consumption points, averages
+and trends unchanged, while remaining in purchase/price views. A subsequent full
+fill must close the interval and include those partial litres exactly once.
+
+A suspicious but valid positive-distance interval must remain visible. Diagnostics
+should expose conflicting timestamps/odometers without correcting records. Preserve
+source metadata when the user explicitly changes Full/Partial. Use synthetic
+fixtures for public regressions; keep personal backups and identifying diagnostic
+examples out of the repository.

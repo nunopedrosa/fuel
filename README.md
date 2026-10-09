@@ -382,6 +382,23 @@ Fuel     = 20 + 15 + 25 = 60 L
 
 The 50 L from the first full fill belongs to the preceding interval and is not counted in the new interval.
 
+A partial fill after the last full tank is an **open interval**. It appears in
+purchase and price views, but does not add a consumption point or change the
+completed consumption average. The last consumption point can therefore be older
+than the most recent purchase.
+
+A high consumption value does not establish that a fill was partial. FuelLog uses
+the recorded Full flag, including flags imported from Jerrycan. To investigate a
+spike, inspect the starting and ending full tanks, all intervening partial fills,
+and their odometers and timestamps. Two nearby timestamps with a large odometer
+change may indicate a source discrepancy, but FuelLog must not guess which field
+is wrong or merge the records automatically. If a recorded full fill was actually
+partial, explicitly edit that record and uncheck **Full**; consumption then awaits
+an ending full tank. Original import metadata remains preserved.
+
+See [Analysis rules and diagnosing spikes](docs/ANALYSIS.md) for the full procedure.
+
+
 ## History
 
 The History screen lists records with:

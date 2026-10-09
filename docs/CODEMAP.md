@@ -59,7 +59,10 @@ source policies are documented in [PROVIDERS.md](PROVIDERS.md).
   price series separate currencies. The explorer builds intervals from whole history,
   then selects wholly contained intervals and purchases within inclusive dates.
   Its sliders and expanded zoom share one ephemeral window; chart sampling does
-  not affect summaries. Urban profiles use positive segment distances.
+  not affect summaries. Urban profiles use positive segment distances. A trailing
+  partial fill remains in purchase views but never closes a consumption interval;
+  trace source flags in `js/import/jerrycan.js` and `source.original` when diagnosing
+  a spike. See [ANALYSIS.md](ANALYSIS.md) for the calculation/diagnostic contract.
 - **Prices:** selected country/fuel → provider or optional proxy → normalized
   prices → promo comparison → cards/map. `userStationPrices` reads local fill-ups
   as a separate historical price source. Provider caches and search archives allow

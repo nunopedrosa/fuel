@@ -72,6 +72,19 @@ it when files, entry points or important data flows move or change.
   Include intervening partial fills and the ending full fill; exclude the starting
   full fill. Leave intervals before the first full tank and after the last full
   tank out of consumption calculations.
+- A trailing partial fill does not create a consumption point or change completed
+  consumption averages. The latest consumption point may therefore predate the
+  latest purchase. Include that partial fill only when a later full tank closes
+  the interval; purchase and price views still include it.
+- Respect the recorded full/partial flag, including the imported source flag.
+  Do not infer tank fullness from purchased litres, short distances, a surprising
+  consumption value or nearby timestamps. A correction requires an explicit user
+  edit; preserve the original import metadata.
+- When investigating an unexpected consumption point, trace both full-tank
+  anchors and every intervening partial fill, and show the litres/distance formula.
+  Check dates, odometers and source flags before changing calculation rules.
+  Suspicious timing or odometer differences warrant review, not automatic merging,
+  deduplication, reordering or correction of distinct records.
 - Use consistent interval rules for dashboard summaries and charts. Flag invalid
   distances and unusual results without altering the underlying records. Clearly
   distinguish recorded purchases, derived consumption and estimates.
@@ -108,6 +121,8 @@ it when files, entry points or important data flows move or change.
 - Report what was actually verified and what remains untested. Explicitly state
   when Safari 12 or a physical iPhone 6 was unavailable; do not claim device
   compatibility based solely on modern-browser or static checks.
+
+Detailed calculation and diagnostic rules: [docs/ANALYSIS.md](docs/ANALYSIS.md).
 
 See also [README.md](README.md), [CONTRIBUTING.md](CONTRIBUTING.md),
 [PRIVACY.md](PRIVACY.md) and [SECURITY.md](SECURITY.md).
