@@ -1,6 +1,6 @@
 # Compatibility
 
-FuelLog is intentionally written without a build step. The only runtime JavaScript dependency is a locally vendored copy of Leaflet 1.9.4 (`vendor/leaflet/`) used for the station map on the Prices page. Low-zoom map tiles are bundled; higher zoom uses OpenStreetMap when online and may be cached in IndexedDB. The Prices bottom sheet and last search archive continue to work offline from cached results.
+FuelLog is intentionally written without a build step. Leaflet 1.9.4 (`vendor/leaflet/`) is vendored locally for the station map, and Tesseract 5.1.1 (`vendor/tesseract/`) is lazy-loaded for optional receipt OCR. Low-zoom map tiles are bundled; higher zoom uses OpenStreetMap when online and may be cached in IndexedDB. The Prices bottom sheet and last search archive continue to work offline from cached results.
 
 ## Minimum target
 
@@ -32,6 +32,10 @@ Receipt scanning uses a file input that supports camera capture and photo-librar
 selection. OCR is lazy-loaded into one Web Worker, the image is limited to 8 MB
 and downscaled to a 1280 px longest edge before recognition, and the worker is
 terminated after each scan. The local worker/core are cached after first use; the
+engine/core are pinned to 5.1.1 to avoid the 7.0.0 core's optional chaining and
+BigInt typed arrays. A direct same-origin worker uses the separate CSP in
+`vendor/tesseract/.htaccess`; WebAssembly evaluation and the language download
+are permitted inside that worker, while the page retains its strict script CSP.
 Portuguese language model is cached by Tesseract in IndexedDB after its first
 online download. Offline scanning requires that first download to have completed.
 The iPhone 6 has limited memory, so OCR may be slow or fail on large/unclear

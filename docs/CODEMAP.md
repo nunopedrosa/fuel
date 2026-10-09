@@ -52,7 +52,8 @@ source policies are documented in [PROVIDERS.md](PROVIDERS.md).
   preserves untouched imported precision and marks manual changes with
   `cityPercentageSource: "user"`. Review both when adding metadata.
 - **Receipt scan:** camera or photo-library input → bounded image resize/contrast →
-  local Tesseract worker → Portuguese receipt parser and amount check → editable
+  direct same-origin Tesseract worker (its response CSP is in
+  `vendor/tesseract/.htaccess`) → Portuguese receipt parser and amount check → editable
   review → existing fill-up form and IndexedDB save. Photos are discarded;
   worker/core assets and the language model are cached locally after first use.
 - **Imports:** `importData` → binary header detection or JSON/delimited parsing

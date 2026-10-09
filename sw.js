@@ -1,4 +1,4 @@
-const CACHE = 'fuellog-v35-receipt-scan';
+const CACHE = 'fuellog-v36-receipt-worker';
 const ASSETS = [
   './',
   'index.html',

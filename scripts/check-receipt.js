@@ -36,4 +36,10 @@ var compact = R.parse('POSTO X\nGasoleo simples\n32,50 L x 1,579 €/L\nTOTAL 51
 assert.equal(compact.litres, 32.5, 'quantity should be read from compact fuel lines');
 assert.equal(compact.pricePerLitre, 1.579, 'unit price should be read next to the per-litre marker');
 assert.equal(compact.amountsMatch, true);
+var attachedUnit = R.parse('POSTO X\nP0123456789 40,06L A 2,319€/L 92,90\nDesconto direto 0,12€/L 5,00\nTOTAL A PAGAR 87,90');
+assert.equal(attachedUnit.litres, 40.06, 'a quantity attached to L must exclude the preceding product code');
+assert.equal(attachedUnit.pricePerLitre, 2.319, 'keep the printed unit price rather than the discount per litre');
+assert.equal(attachedUnit.totalCost, 87.9);
+assert.equal(attachedUnit.amountsMatch, false, 'a discounted total must prompt review instead of silently changing the price');
+assert.equal(R.parse('POSTO X\nPreco/L 1,60€/L').litres, null, 'a unit-price marker is not a purchased quantity');
 console.log('Receipt parser checks passed');

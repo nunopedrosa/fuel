@@ -51,7 +51,7 @@
     var result = { station: '', date: null, fuelType: '', litres: null, pricePerLitre: null, totalCost: null, amountsMatch: null, warnings: [] };
     var datePattern = /(?:data|date|\b\d{1,2}[/.\-]\d{1,2}[/.\-]\d{2,4}\b|\b\d{4}-\d{1,2}-\d{1,2}\b)/i;
     var fuelPattern = /(gas[oó]leo|diesel|gasolina|petrol|gpl|lpg)/i;
-    var litrePattern = /(litros?|litres?|\bL\b)/i;
+    var litrePattern = /(litros?|litres?|\d\s*L\b|\bL\b)/i;
     var pricePattern = /(pre[cç]o\s*\/?\s*l|price\s*\/?\s*l|€\s*\/?\s*l|eur\s*\/?\s*l|\/?\s*l\s*€)/i;
     var totalPattern = /(total|valor\s*(?:a\s*pagar)?|amount\s*due)/i;
     var skipStation = /(data|date|total|litros?|litres?|pre[cç]o|price|€|eur|gas[oó]leo|diesel|gasolina|petrol|gpl|lpg|fatura|recibo|nif|contribuinte)/i;
@@ -61,7 +61,9 @@
       if (!result.date && datePattern.test(line)) result.date = parseDate(line);
       if (!result.fuelType && fuelPattern.test(line)) result.fuelType = line;
       if (result.litres == null && litrePattern.test(line)) {
-        var litreValue = labelledAmount(line, /(\d[\d\s.,]*\d|\d)\s*(?:litros?|litres?|\bL\b)/i);
+        // OCR often joins the unit to its number (40,06L). Restrict spaced
+        // digit groups to thousands so a preceding product code cannot join it.
+        var litreValue = labelledAmount(line, /(?:^|[^\d.,])(\d+(?:[ .]\d{3})*(?:[.,]\d+)?)\s*(?:litros?|litres?|L\b)/i);
         if (litreValue == null && !pricePattern.test(line)) litreValue = lastAmount(line);
         if (litreValue != null) result.litres = litreValue;
       }

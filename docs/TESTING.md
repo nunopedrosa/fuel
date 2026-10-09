@@ -27,7 +27,7 @@ php scripts/check-stations.php
 | `check-sw-assets.js` | `sw.js` ASSETS vs disk and `index.html` scripts |
 | `check-fuels.js` | Fuel catalogue matching |
 | `check-promos.js` | Promo stacking rules |
-| `check-receipt.js` | Portuguese receipt parsing and field validation |
+| `check-receipt.js` | Portuguese receipt parsing, compact litre units, product-code separation and discounted-total warnings |
 | `check-stations.php` | Station proxy index build, radius search, request validation |
 
 Fixtures for providers live in `scripts/fixtures/providers/`.
@@ -51,6 +51,17 @@ The receipt form handoff can be checked with `node scripts/browser-receipt.cjs`
 against the same local server. It stubs only the OCR result and exercises photo
 selection, editable review, the existing fill-up form and IndexedDB save; it does
 not test OCR accuracy or the remote language-model download.
+
+`scripts/browser-receipt-ocr.cjs` tests the real worker/core with the hosting CSP,
+synthetic receipt recognition, cancellation, a second scan and offline reload.
+It starts its own temporary server. Set `FUELLOG_QA_OCR_MODEL` to a locally
+downloaded public `por.traineddata.gz` from
+`https://tessdata.projectnaptha.com/4.0.0_fast/por.traineddata.gz`; the test supplies
+that real model at the external download boundary for a deterministic run.
+The same Playwright/Chromium overrides apply. Optional `FUELLOG_QA_RECEIPT` runs
+a local image instead, printing review values without saving records. Keep
+personal receipt photos out of repository fixtures. This does not verify live
+host availability or physical iPhone support.
 
 ## Consumption diagnostic checklist
 

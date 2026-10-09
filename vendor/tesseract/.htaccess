@@ -1,0 +1,7 @@
+# Safari 12 needs unsafe-eval for WebAssembly. Confine it to the OCR worker;
+# the document keeps script-src 'self' and cannot evaluate imported text.
+<Files "worker.min.js">
+  <IfModule mod_headers.c>
+    Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'unsafe-eval'; connect-src 'self' https://tessdata.projectnaptha.com; object-src 'none'; base-uri 'none'"
+  </IfModule>
+</Files>

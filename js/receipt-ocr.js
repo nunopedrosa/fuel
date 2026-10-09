@@ -67,6 +67,9 @@
     workerPromise = loadEngine().then(function (engine) {
       return engine.createWorker('por', 1, {
         workerPath: WORKER_PATH,
+        // Serve a same-origin worker directly so the app's strict CSP remains
+        // in force. Its separate response policy permits only local OCR code.
+        workerBlobURL: false,
         corePath: CORE_PATH,
         langPath: LANGUAGE_PATH,
         gzip: true,

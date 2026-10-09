@@ -41,6 +41,7 @@ jobs:
           node scripts/check-sw-assets.js
           node scripts/check-fuels.js
           node scripts/check-promos.js
+          node scripts/check-receipt.js
       - name: Validate manifest JSON
         run: python3 -m json.tool manifest.webmanifest >/dev/null
       - name: Only the station proxy may be PHP
