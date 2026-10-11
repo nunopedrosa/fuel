@@ -1,7 +1,7 @@
 // Dependency-free SVG explorer. Selection is ephemeral and summaries always use unsampled data.
 window.FuelLogAnalysisUI = (function () {
   'use strict';
-  var A = FuelLogAnalysis, selection = null;
+  var A = window.FuelLogAnalysis, selection = null;
   var TABS = [['consumption','Consumption'],['price','Price paid'],['monthly','Purchases'],['urban','Urban driving']];
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
   function n(v,d) { return v === null || v === undefined ? '—' : Number(v).toLocaleString(undefined,{maximumFractionDigits:d === undefined ? 2 : d}); }
