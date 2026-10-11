@@ -26,7 +26,7 @@ assets.forEach(function (asset) {
 
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const scripts = [];
-html.replace(/<script src="([^"]+)"/g, function (_, src) { scripts.push(src); });
+html.replace(/<script(?:\s+defer)?\s+src="([^"]+)"/g, function (_, src) { scripts.push(src); });
 scripts.forEach(function (src) {
   const base = src.split('?')[0];
   assert.ok(fs.existsSync(path.join(root, base)), 'index.html script missing on disk: ' + src);

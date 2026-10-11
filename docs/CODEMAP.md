@@ -8,9 +8,11 @@ The development requirements live in [AGENTS.md](../AGENTS.md).
 ## Start here
 
 FuelLog is a static PWA with no build step. Most UI and application logic lives
-in `app.js`. `index.html` loads ordinary scripts in dependency order: configuration,
-database, fuel catalogue, provider registry, promos, offline tiles, country
-adapters, Leaflet, data/import modules, then the application.
+in `app.js`. `index.html` shows a static Home placeholder in `#app`, registers the
+service worker immediately, then loads a small deferred script bundle (configuration,
+database, fuels, providers, promos, data, application). Map, country adapters,
+analysis, import and receipt OCR scripts load after first paint via
+`loadDeferredScripts` in `app.js`.
 
 | Area or task | Files | Useful entry points |
 | --- | --- | --- |
@@ -46,8 +48,9 @@ source policies are documented in [PROVIDERS.md](PROVIDERS.md).
 
 ## Main data flows
 
-- **Startup:** `init` → `FuelDB.open` → `refresh` → default vehicle when needed
-  → `migrateData` → `render` → `registerFuelServiceWorker`.
+- **Startup:** service worker registration (also inlined in `index.html`) → `init`
+  → `FuelDB.open` → `refresh` → default vehicle when needed → `migrateData`
+  → `render` (replaces placeholder) → `loadDeferredScripts` after first paint.
 - **Editing:** form → submit handler → `FuelDB.put` → `refresh` → rendering.
   Both save handlers preserve existing fields; unchanged fill-up dates retain
   seconds/milliseconds. The urban slider writes `cityPercentage` only when changed,

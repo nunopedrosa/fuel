@@ -12,11 +12,15 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
   <link rel="preload" href="fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="styles.css?v=46" />
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
+  <link rel="stylesheet" href="styles.css?v=47" />
   <title>FuelLog</title>
 </head>
 <body>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(function () {});
+    }
+  </script>
   <div class="app-shell">
     <header class="topbar">
       <div class="top-left">
@@ -33,7 +37,33 @@
       </div>
     </header>
 
-    <main id="app" class="content" aria-live="polite"></main>
+    <main id="app" class="content startup-loading" aria-live="polite" aria-busy="true" aria-label="Loading dashboard">
+      <div class="hero">
+        <div class="hero-card">
+          <div class="startup-bar startup-bar-title" aria-hidden="true"></div>
+          <p class="startup-line muted" aria-hidden="true"></p>
+          <div class="hero-metric">— <small>L/100 km average</small></div>
+        </div>
+        <div class="side-card">
+          <div>
+            <div class="kicker">Latest fill-up</div>
+            <div class="startup-bar startup-bar-big" aria-hidden="true"></div>
+            <p class="muted" aria-hidden="true">—</p>
+          </div>
+          <div class="actions-inline dashboard-fill-actions">
+            <button class="btn" type="button" tabindex="-1" disabled>+ Add fill-up</button>
+            <button type="button" class="btn secondary" tabindex="-1" disabled aria-hidden="true">📷 Scan</button>
+            <button type="button" class="btn ghost" tabindex="-1" disabled aria-hidden="true">Photos</button>
+          </div>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="stat"><div class="label">Distance logged</div><div class="value">—</div></div>
+        <div class="stat"><div class="label">Fuel logged</div><div class="value">—</div></div>
+        <div class="stat"><div class="label">Total spend</div><div class="value">—</div></div>
+        <div class="stat"><div class="label">Logged spending / km</div><div class="value">—</div></div>
+      </div>
+    </main>
 
     <nav class="bottom-nav" aria-label="Primary navigation">
       <button data-route="dashboard" class="nav-item active"><span>⌂</span><small>Home</small></button>
@@ -55,25 +85,12 @@
     </div>
   </div>
   <div id="toast" class="toast" role="status"></div>
-  <script src="config.js"></script>
-  <script src="db.js"></script>
-  <script src="js/prices/fuels.js"></script>
-  <script src="js/prices/providers.js"></script>
-  <script src="js/prices/promos.js"></script>
-  <script src="js/prices/offline-tiles.js"></script>
-  <script src="js/prices/providers/pt-dgeg.js"></script>
-  <script src="js/prices/providers/es-minetur.js"></script>
-  <script src="js/prices/providers/fr-government.js"></script>
-  <script src="js/prices/providers/be-fps.js"></script>
-  <script src="js/prices/providers/nl-cbs.js"></script>
-  <script src="vendor/leaflet/leaflet.js"></script>
-  <script src="js/data.js"></script>
-  <script src="js/import/bplist.js"></script>
-  <script src="js/import/jerrycan.js"></script>
-  <script src="js/analysis.js"></script>
-  <script src="js/analysis-ui.js"></script>
-  <script src="js/receipt.js"></script>
-  <script src="js/receipt-ocr.js"></script>
-  <script src="app.js"></script>
+  <script defer src="config.js"></script>
+  <script defer src="db.js"></script>
+  <script defer src="js/prices/fuels.js"></script>
+  <script defer src="js/prices/providers.js"></script>
+  <script defer src="js/prices/promos.js"></script>
+  <script defer src="js/data.js"></script>
+  <script defer src="app.js"></script>
 </body>
 </html>

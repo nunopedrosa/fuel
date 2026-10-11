@@ -1,8 +1,8 @@
-const CACHE = 'fuellog-v40-form-focus-fonts';
+const CACHE = 'fuellog-v41-deferred-startup';
 const ASSETS = [
   './',
   'index.html',
-  'styles.css?v=46',
+  'styles.css?v=47',
   'config.js',
   'db.js',
   'js/data.js',
