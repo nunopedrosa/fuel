@@ -100,11 +100,13 @@ For the selected vehicle FuelLog displays:
 - your own fill-up history surfaced as a private local price source ("You paid … here")
 - "Add fill-up" from a station card or map popup
 - user-defined brand promos: per-litre or per-fill discounts, cumulative or exclusive, that show an effective price on matching stations and re-sort results by that price
-- optional device geolocation
-- radius filtering when location is available
-- sorting by price and then distance
+- typical-fill **total cost** and **saving** versus the most expensive station in the current results (uses *Typical fill* from Brand promos)
+- colour-coded station rows and map markers (cheapest, within about €0.01/L, within about €0.05/L, higher)
+- **Find** searches at the map centre; **Find ◎** uses your location (same ◎ control as on the map)
+- optional device geolocation and radius filtering
+- sorting by effective price and then distance
+- full-screen map with a bottom sheet for filters and results; opening the list recentres markers in the visible map area above the sheet
 - optional map view of stations and the user's location (OpenTopoMap / OSM)
-- "search this area" around the current map centre
 - on-device result caching
 - reduced-memory search path for iPhone 6 / iOS 12
 
@@ -112,6 +114,7 @@ For the selected vehicle FuelLog displays:
 
 - installable on supported phones and computers
 - offline application shell
+- **Settings → App** shows the installed version; when online, FuelLog checks whether a newer service-worker release is available and offers **Update app**
 - IndexedDB local database
 - no runtime JavaScript frameworks or third-party libraries
 - no build step
@@ -280,11 +283,28 @@ Fuel stations sometimes run brand-level promotions. In **Settings → Brand prom
 - an optional fuel restriction and an optional end date
 - whether the promo is **cumulative** (the default) or exclusive
 
-Cumulative promos that match the same station are added together. An exclusive promo is not combined with that stack or with other exclusive promos. The price list and the map show the **effective price** of the better package — the cumulative stack, or the single best exclusive promo — with the original price struck through and a promo badge. When both packages exist, the other one is shown on a second line. Results are sorted by the winning effective price. Per-fill discounts are converted to an approximate per-litre value using the configurable *Typical fill* size (default 40 L) for display and sorting. A promo saved before this option existed is treated as cumulative.
+Cumulative promos that match the same station are added together. An exclusive promo is not combined with that stack or with other exclusive promos. The price list and the map show the **effective price** of the better package — the cumulative stack, or the single best exclusive promo — with the original price struck through and a promo badge. When both packages exist, the other one is shown on a second line. Results are sorted by the winning effective price. Per-fill discounts are converted to an approximate per-litre value using the configurable *Typical fill* size (default 40 L) for display, sorting and **typical-fill totals** on station cards. The same typical fill is used to show how much you would pay at each station and the saving versus the most expensive option in the current result set. A promo saved before this option existed is treated as cumulative.
 
 Promos match on the station's `brand` field only. Providers that do not report a brand (France) never match; in Spain the provider uses the station name as the brand, so name-based brands work there.
 
 Starting a fill-up from a station card uses the winning package only. A per-litre winner prefills the effective price. If that package includes a per-fill discount, the form prefills the listed price minus any exact per-litre discounts and a note lists the per-fill amounts to subtract from the total. The price and the note stay editable, and saving stores what is on the form.
+
+## Prices page
+
+Open **Prices** from the bottom navigation. Choose country and fuel, set a search radius, then:
+
+- **Find** — search stations around the **map centre** (pan the map first if needed).
+- **Find ◎** — ask for your location, centre the map there, then run the same search (the ◎ symbol matches the locate control on the map).
+
+Results appear in a bottom sheet. Drag the handle or tap it to switch between a peek strip (filters only) and a half-height list. Station cards show the name, distance under the name, effective €/L on the right, then the typical-fill total and saving (for example `€68.80 · Save €2.50`) under the price. **Go** opens directions; **Add fill-up** prefills the fill-up form from that station.
+
+Tap a station name to focus it on the map. Map popups show price, typical-fill total and saving on one right-aligned line. Markers and row backgrounds use the same green / yellow / red price tiers as the sorted list.
+
+When results open, the map fits stations in the area still visible above the sheet. Belgium and the Netherlands show official reference prices only (no station list or map search). See [Fuel price providers](#fuel-price-providers).
+
+## Settings
+
+Besides vehicles, brand promos, backup/import and feedback, the **App** card at the top shows the installed release (for example **v40**). While **online**, FuelLog fetches `sw.js` and compares its cache version to the copy you are running. If a newer release is available — or a waiting service worker is already downloaded — **Update app** activates it and reloads. **Offline** shows that the update check is unavailable; an already-downloaded update can still be applied.
 
 ## Adding a fill-up
 
@@ -988,6 +1008,8 @@ The service worker stores the application shell, including first-party resources
 
 This allows the installed application to start and perform core logging while offline.
 
+Each release bumps the `CACHE` name in `sw.js` and the matching `appCacheId` in `config.js` (checked in CI). Users can install updates from **Settings → App** when online instead of relying only on a manual reload.
+
 The service worker deliberately does not treat external provider responses as ordinary application-shell assets.
 
 ## IndexedDB provider cache
@@ -1006,7 +1028,7 @@ If the network request fails and older cached data exists, FuelLog may use that 
 
 ## Prices map (offline)
 
-The Prices page uses a full-screen map with a bottom sheet for filters and results.
+The Prices page uses a full-screen map with a bottom sheet for filters and results (see [Prices page](#prices-page)).
 
 - **Bundled low-zoom tiles** (`assets/map-tiles/`, z5–z7) ship with the app so a coarse map works offline after install.
 - **IndexedDB `mapTiles`** stores tiles fetched while online, per chosen map style (LRU cap ~32 MB). On the Prices map, a control lets you pick the online provider (default OpenTopoMap; optional OpenStreetMap street maps). Offline mode uses bundled terrain tiles plus cache. Avoid `tile.openstreetmap.org` for bulk/automated traffic; the optional osm.org style is user-initiated only.
@@ -1138,6 +1160,8 @@ http://localhost:8080/
 
 Browsers normally treat localhost as a secure-enough context for development features. Real deployment should use HTTPS.
 
+When shipping a new release, bump **`CACHE` in `sw.js`** and **`appCacheId` in `config.js`** to the same value, add any new static files to the service worker `ASSETS` list, and run `node scripts/check-sw-assets.js`.
+
 ## Publishing the repository
 
 Example initial GitHub setup:
@@ -1178,7 +1202,7 @@ For large optional functionality, prefer an explicit optional/on-demand mechanis
 |-- index.html                 main application HTML
 |-- app.js                     UI, calculations, import/export and price-search logic
 |-- db.js                      IndexedDB wrapper
-|-- config.js                  runtime/static configuration
+|-- config.js                  runtime config (`appCacheId` must match `sw.js` `CACHE`)
 |-- styles.css                 application styling and old-Safari fallbacks
 |-- sw.js                      service worker / offline app shell
 |-- manifest.webmanifest       PWA metadata
@@ -1448,7 +1472,7 @@ FuelLog uses a fallback that opens the generated export in Safari. Use the **Sha
 
 A service worker may still have cached the previous application shell.
 
-Typical recovery steps are:
+While **online**, open **Settings → App**. If an update is available, tap **Update app**. Otherwise confirm the version shown matches what you deployed, then try:
 
 1. close all FuelLog windows;
 2. reopen the application while online;
@@ -1502,7 +1526,6 @@ Potential enhancements that can remain consistent with the project's architectur
 - more sophisticated duplicate-review screen
 - additional European public fuel-price providers behind the existing provider interface (e.g. the EU Oil Bulletin)
 - station favourites
-- effective-cost comparison including fuel used to reach a station
 - richer charts that remain lightweight on old phones
 - maintenance and vehicle-expense records
 - configurable units for markets using miles/gallons

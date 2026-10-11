@@ -41,7 +41,10 @@ it when files, entry points or important data flows move or change.
   their benefit, payload, memory cost, compatibility, offline availability and
   privacy impact. Keep optional large functionality out of the startup payload.
 - When adding runtime files or changing cached assets, review `sw.js` so updates
-  and offline operation continue to work.
+  and offline operation continue to work. Bump the `CACHE` name in `sw.js` and
+  set the same value as `appCacheId` in `config.js`; `scripts/check-sw-assets.js`
+  enforces the match. Settings shows the installed version and checks `sw.js`
+  when online for an optional PWA update.
 
 ## Data integrity and portability
 
