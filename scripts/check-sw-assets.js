@@ -38,4 +38,9 @@ const cacheMatch = sw.match(/const CACHE = '([^']+)'/);
 assert.ok(cacheMatch, 'sw.js must define CACHE version');
 assert.match(cacheMatch[1], /^fuellog-v\d+/, 'CACHE name should be versioned');
 
+const config = fs.readFileSync(path.join(root, 'config.js'), 'utf8');
+const configCacheMatch = config.match(/appCacheId:\s*'([^']+)'/);
+assert.ok(configCacheMatch, 'config.js must define appCacheId');
+assert.equal(configCacheMatch[1], cacheMatch[1], 'config.js appCacheId must match sw.js CACHE');
+
 console.log('service worker asset checks passed (' + assets.length + ' assets, ' + scripts.length + ' scripts)');
