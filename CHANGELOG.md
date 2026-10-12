@@ -32,6 +32,8 @@
 
 ### Documentation
 
+- Reconciled development guidance, code map, README and focused guides with release markers, vendored OCR/maps, backup settings semantics, provider request timing and actual offline tile caching. Updated the review and verification instructions.
+
 - Added `docs/PROVIDERS.md` describing the provider architecture, licences, cache TTLs, data sent per provider, and the public-data-only policy; moved the providers design handover into `docs/`.
 - Expanded `README.md` into the primary project and user manual.
 - Documented installation on iPhone 6, current mobile platforms and desktop.
@@ -45,4 +47,4 @@
 ### Compatibility baseline
 
 - iPhone 6 / iOS 12.5.7 remains the minimum compatibility target.
-- Core application remains dependency-free and requires no build step or backend.
+- Core logging requires no framework, build step or personal-data backend; maps and optional OCR use locally vendored libraries.

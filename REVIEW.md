@@ -1,42 +1,62 @@
-# Public-release review
+# Code and documentation review
 
-Reviewed for a public, non-commercial, local-first deployment.
+Reviewed on 12 October 2026 against the checked-in implementation. This is a
+focused architecture/documentation review and automated regression run, not a
+security certification or proof of device compatibility.
 
-## Changes made
+## Current architecture
 
-- Removed the required DreamHost PHP price proxy from the default application.
-- DGEG price requests now originate directly from the user's browser and only after an explicit search.
-- Added a 15-minute IndexedDB cache for station-price search responses.
-- Increased the local cache for fuel-type reference data to 30 days.
-- Changed the service worker so only same-origin static assets are cached; DGEG responses are not placed in Cache Storage and navigation has a correct offline fallback.
-- Added `config.js`; it contains only public runtime settings and no secrets.
-- Added privacy/security documentation and explicit local-first contribution rules.
-- Added security and cache headers for DreamHost/Apache.
-- Added MIT license, `.gitignore`, and GitHub Actions syntax/manifest checks.
-- Confirmed there are no bundled third-party JavaScript libraries, trackers, analytics, API keys, passwords, tokens, or server credentials.
-- Added an iPhone 6 / iOS 12.5.7 compatibility pass, removing unsupported modern JavaScript syntax/APIs and adding Apple PWA metadata.
-- Added multi-format local import for FuelLog JSON, generic JSON, CSV, semicolon CSV, TSV and delimited TXT.
-- Added a 5 MB per-file import guard for old-device memory safety.
-- Added district-filtered DGEG price search; iOS 12 requires a district to avoid downloading roughly 3,000 station rows for one fuel type.
-- Added an iOS 12 export fallback for browsers without reliable generated-file download support.
+- Static PWA with no build step. Core records live in IndexedDB (`FuelLogDB`,
+  version 3); JSON backup version 4 retains vehicles, fill-ups, promos and settings.
+- Leaflet 1.9.4 is vendored for maps. Tesseract.js/core 5.1.1 is loaded only for
+  receipt scanning; images stay local and the Portuguese model downloads on first
+  use. Inter fonts are bundled. The app is not free of third-party dependencies.
+- The checked-in configuration enables the optional PT/ES station proxy.
+  `api/stations.php` and `api/stations-functions.php` cache public datasets and
+  answer bounded radius searches. Static-only hosts must disable this endpoint.
+- Prices can fetch catalogues, reference prices and map tiles on opening the
+  page. Station searches require an action. Network boundaries are described in
+  [PRIVACY.md](PRIVACY.md); ordinary logging does not require a price provider.
+- Shared full-to-full interval calculations exclude a trailing partial fill from
+  consumption while retaining it in purchase views. Imported source flags and
+  metadata remain available for diagnosis; see [docs/ANALYSIS.md](docs/ANALYSIS.md).
+- Releases coordinate HTML, app, config and service-worker markers. A complete
+  shell is downloaded and checked before activation; deploy the worker last.
+  See [docs/UPDATES.md](docs/UPDATES.md).
 
-## Hosting behavior
+## Findings reflected in documentation
 
-The server normally sees only requests for the small static application files. Once the PWA/service worker is installed, those assets are served from the device cache. Fuel-log records and imports/exports do not touch the server.
+- Release instructions previously mentioned only worker/config markers. They now
+  include app/HTML markers and versioned asset URLs.
+- The README file tree and dependency claims omitted analysis, languages,
+  import modules, OCR and the PHP helper. The code map also pointed generic import
+  persistence at an unused vehicle helper; imports actually stage records before
+  `commitImport`.
+- Generic duplicate keys include currency and total cost. Native backup merge
+  uses local IDs, preserves distinct IDs and remaps conflicts; it is not an edited
+  history reconciliation service.
+- Backup replacement upserts settings rather than clearing the settings store.
+  Keys absent from the backup remain local, including an existing language choice.
+  JSON excludes provider caches, map tiles and OCR assets.
+- Only the bundled tile manifest is precached at install. Tile PNGs are cached
+  on request, so installation alone does not guarantee offline map coverage.
+  IndexedDB tile eviction uses oldest write timestamps, not least recent reads.
+- The proxy rejects a different hostname in a supplied Origin header, but accepts
+  requests without Origin. That check is not authentication or rate limiting.
+  The application does not persist search coordinates; hosting request-body
+  logging remains a deployment concern.
 
-The price finder contacts DGEG directly. The host is not a relay and cannot be abused as an open DGEG proxy.
+## Verification and limits
 
-## Update — October 2025
+All 21 `scripts/check-*.js` regressions passed, covering calculations, imports,
+atomic writes, metadata, providers, receipts, languages, storage and updates.
+JavaScript syntax, the CI incompatible-syntax/API scan, manifest JSON, approved
+PHP file inventory, both PHP lints and the station-proxy regression also passed.
+Local checks used Node 22.23.1 and PHP 8.5.10; PHP 7.4 was not exercised locally.
+See [docs/TESTING.md](docs/TESTING.md) for repeatable commands.
 
-An optional same-origin station proxy (`api/stations.php`, PHP 7.4+, enabled via `stationProxy` in `config.js`) was added for the DreamHost deployment. It caches each fuel type's DGEG station list server-side for one hour and answers only radius queries, so clients download just nearby stations. It is not an open relay: the upstream DGEG URL is fixed, it accepts POST only, rejects cross-origin requests via the `Origin` header, and never stores request coordinates. Static-only deployments (GitHub Pages) set `stationProxy: null` and keep the direct-DGEG behaviour reviewed above.
-
-## Update — European providers
-
-Fuel-price lookup is now multi-provider via a registry in `js/prices/`: station prices for Portugal (DGEG), Spain (Minetur/MITECO) and France (data.economie.gouv.fr), plus official reference prices for Belgium (Statbel) and the Netherlands (CBS). All sources are public/official open data with stated licences; no operator sites, scraping, private endpoints or commercial aggregators are used. The CSP `connect-src` allowlist covers exactly the provider hosts: `precoscombustiveis.dgeg.gov.pt`, `sedeaplicaciones.minetur.gob.es`, `data.economie.gouv.fr`, `bestat.statbel.fgov.be`, `opendata.cbs.nl`. The optional station proxy is unchanged in shape and now serves the PT and ES datasets.
-
-## Remaining considerations
-
-- Browser storage can be cleared; JSON backups remain important.
-- DGEG availability and browser CORS behavior are external dependencies. `config.js` preserves an optional future proxy setting, but it is disabled by default.
-- The `.htaccess` security headers apply on DreamHost/Apache, not GitHub Pages.
-- DGEG data/usage terms remain separate from the MIT license for the application source and artwork.
+This pass changes documentation only. No browser automation, live-provider calls,
+Apache deployment checks or physical-device tests were run. Safari 12, a physical
+iPhone 6 and installed Home Screen behaviour were unavailable. Provider terms and
+live endpoint availability were not independently revalidated. Historical design
+plans remain historical; focused guides and code describe current behaviour.

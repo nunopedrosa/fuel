@@ -1,6 +1,6 @@
 # Compatibility
 
-FuelLog is intentionally written without a build step. Leaflet 1.9.4 (`vendor/leaflet/`) is vendored locally for the station map, and Tesseract 5.1.1 (`vendor/tesseract/`) is lazy-loaded for optional receipt OCR. Low-zoom map tiles are bundled; higher zoom uses OpenStreetMap when online and may be cached in IndexedDB. The Prices bottom sheet and last search archive continue to work offline from cached results.
+FuelLog is intentionally written without a build step. Leaflet 1.9.4 (`vendor/leaflet/`) is vendored locally for the station map, and Tesseract 5.1.1 (`vendor/tesseract/`) is lazy-loaded for optional receipt OCR. Low-zoom map tiles are bundled; higher zoom uses the selected provider (OpenTopoMap by default, with OpenStreetMap street alternatives) when online and may be cached in IndexedDB. Only the bundled tile manifest is precached; PNG coverage becomes available offline after those areas are viewed online. The Prices bottom sheet and last search archive continue to work offline from cached results.
 
 ## Minimum target
 

@@ -1,5 +1,10 @@
 # FuelLog PWA — European Fuel Price Provider Handover
 
+> Historical design handover. For the implemented provider contract and current
+> request/privacy behaviour, use [PROVIDERS.md](PROVIDERS.md),
+> [CODEMAP.md](CODEMAP.md) and [PRIVACY.md](../PRIVACY.md). This document is not a
+> current deployment or verification checklist.
+
 ## Purpose
 
 FuelLog is a public, non-commercial, open-source fuel logging PWA intended for `https://fuel.trekm.com` and GitHub.

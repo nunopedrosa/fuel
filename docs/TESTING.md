@@ -3,12 +3,24 @@
 FuelLog has no unit-test framework. Behaviour is guarded by Node and PHP scripts under
 `scripts/`, plus static checks in [`.github/workflows/check.yml`](../.github/workflows/check.yml).
 
-Run everything locally:
+Run the automated baseline from the repository root (Node, Python 3 and PHP required):
 
 ```bash
+set -e
+for f in app.js db.js config.js sw.js; do node --check "$f"; done
+find js -name '*.js' -exec node --check {} \;
+! grep -rnE "[A-Za-z_\]\)]\?\.[A-Za-z_\[]|\?\?|\.at\(|replaceAll|Object\.fromEntries" app.js db.js sw.js config.js js/
 for f in scripts/check-*.js; do node "$f"; done
+python3 -m json.tool manifest.webmanifest >/dev/null
+php -l api/stations.php
+php -l api/stations-functions.php
 php scripts/check-stations.php
 ```
+
+CI uses Node 22 and PHP 7.4 and additionally checks that only the two proxy PHP
+files and `scripts/check-stations.php` exist. The syntax/API scan is a targeted
+guard, not a complete Safari compatibility check. Vendored engines need separate
+compatibility review. The optional browser scripts below are not part of CI.
 
 | Script | Focus |
 | --- | --- |

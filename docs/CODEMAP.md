@@ -26,13 +26,14 @@ analysis, import and receipt OCR scripts load after first paint via
 | Consumption and cost calculations | [app.js](../app.js) | `vehicleFillups`, `calcMetrics`, `consumptionSeries`, `priceSeries` |
 | Fill-up and vehicle editing | [app.js](../app.js) | `fillForm`, `urbanProfileField`, `wireUrbanProfile`, fill-up submit handler in `wireCommon`, `vehicleDialog`, `wireVehicleForm`, `findStationForFill`, `pickStationForFill` |
 | Receipt scanning and OCR parsing | [js/receipt.js](../js/receipt.js), [js/receipt-ocr.js](../js/receipt-ocr.js), [app.js](../app.js) | `FuelLogReceipt.parse`, `FuelLogReceiptOCR.scan`, receipt review and existing fill-up form |
-| Import parsing and validation | [app.js](../app.js) | `importData`, `readFileText`, `extractRowsFromJson`, `parseDelimited`, `guessDelimiter`, `flexDate`, `flexNum`, `flexBool`, `rowValue` |
-| Import persistence and duplicates | [app.js](../app.js) | `importGenericRows`, `ensureVehicleByName`, `importFuelLogBackup` |
+| Import parsing and validation | [app.js](../app.js) | `importData`, `readFileBuffer`, `readFileText`, `extractRowsFromJson`, `parseDelimited`, `guessDelimiter`, `flexDate`, `flexNum`, `flexBool`, `rowValue` |
+| Import persistence and duplicates | [app.js](../app.js) | `importGenericRows`, `prepareJerrycanBatch`, `previewImport`, `importFuelLogBackup` |
 | Backup and export | [app.js](../app.js) | `exportJson`, `exportCsv`, `download` |
 | Local storage and migrations | [db.js](../db.js), [app.js](../app.js) | `FuelDB.open`, `commitImport`, `DB_VERSION`, `migrateData`, `normalizeStoredFuels`, `migrateMapTileCache` |
 | Fuel catalogue and matching | [js/prices/fuels.js](../js/prices/fuels.js), [app.js](../app.js) | `FuelLogFuels`, `fuelLabel`, `canonicalForPriceFuelKey` |
 | Provider contract and caches | [js/prices/providers.js](../js/prices/providers.js) | `FuelProviders.register`, `stationProvider`, `referenceProvider`, `cached`, `legacyIOS` |
 | Station and reference searches | [app.js](../app.js), [config.js](../config.js), [api/stations.php](../api/stations.php) | `wirePrices`, `runPriceSearch`, `runReference`, `searchProxy`, `renderStations`, `renderReference`, `findPrices` / `findPricesHere` (`runStationFind`) |
+| PHP proxy validation and indexing | [api/stations.php](../api/stations.php), [api/stations-functions.php](../api/stations-functions.php) | `parseStationsRequest`, `fetchUpstream`, `buildIndex`, `stationsSearchFromIndex`; [check-stations.php](../scripts/check-stations.php) |
 | Station list and map popups | [app.js](../app.js), [styles.css](../styles.css) | `stationHtml`, `popupHtml`, `stationTypicalFillTotal`, `maxTypicalFillTotal`, `stationFillCostLine`, `stationDistanceHtml`, `priceTierClass` |
 | User-observed prices and provenance | [app.js](../app.js) | `userStationPrices`, `userHistoryHtml`, `youPaidHtml`, `stationProvHtml`, `logFillAt` |
 | Brand promos and effective prices | [js/prices/promos.js](../js/prices/promos.js), [app.js](../app.js) | `FuelLogPromos`, `stationOffer`, `stationSortPrice`, `promoFillLitres`, `fillPromoPrice`, `promoDialog`, `wirePromoForm` |
@@ -85,6 +86,10 @@ source policies are documented in [PROVIDERS.md](PROVIDERS.md).
   → Jerrycan controls or generic mode controls → normalization/validation →
   preview and duplicates → `FuelDB.commitImport` → `refresh` → `render`.
   Native backups validate records/references before the same transaction path.
+  Generic imports stage vehicles in memory inside `importGenericRows`; the legacy
+  `ensureVehicleByName` helper is not called by this path. Generic duplicates use
+  vehicle + `FuelLogData.sourceKey` (date, odometer, litres, currency, total cost);
+  native backups preserve distinct local IDs and remap conflicts on merge.
 - **Calculations:** `vehicleFillups` → shared `FuelLogData.intervals` →
   `calcMetrics` summaries and `consumptionSeries` charts. Monetary summaries and
   price series separate currencies. The explorer builds intervals from whole history,
@@ -113,7 +118,10 @@ source policies are documented in [PROVIDERS.md](PROVIDERS.md).
 `db.js` defines `vehicles`, `fillups`, `settings`, `priceCache`, `promos` and
 `mapTiles` stores. Records use local IDs; fill-ups link to vehicles through
 `vehicleId`. `commitImport` writes affected stores atomically and resolves on transaction
-completion. Store/index upgrades live in `FuelDB.open`; record normalization
+completion. Replacement clears only participating non-settings stores; settings
+are upserted, so absent backup keys remain local. JSON backup version 4 is separate
+from IndexedDB version 3 and the `schemaMigrated` record-normalization marker.
+Store/index upgrades live in `FuelDB.open`; record normalization
 and settings migrations live in `app.js`.
 
 Settings → Storage estimates the UTF-8 JSON payload of all saved fill-ups, vehicles,
@@ -123,7 +131,11 @@ same-origin storage; missing, rejected or invalid estimates show unknown capacit
 Additional fill-ups divide remaining quota by average serialized fill-up size,
 without promising that many records will fit. Empty logs have no record estimate.
 
-Service-worker Cache Storage in `sw.js` is separate from IndexedDB. The optional
+Service-worker Cache Storage in `sw.js` is separate from IndexedDB. The tile
+manifest is precached; bundled PNGs are cached on request. `mapTiles` uses
+provider-qualified keys and evicts by write timestamp at a 32 MiB cap, without
+refreshing timestamps on reads. Optional OCR runtime assets are cached on use;
+Tesseract manages its language-model cache separately. The optional
 PHP proxy caches public station datasets in `api/cache/`; it does not store the
 user's fuel log. `.htaccess` and `api/cache/.htaccess` control hosting/cache access.
 

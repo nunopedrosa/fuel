@@ -42,9 +42,12 @@ it when files, entry points or important data flows move or change.
   privacy impact. Keep optional large functionality out of the startup payload.
 - When adding runtime files or changing cached assets, review `sw.js` so updates
   and offline operation continue to work. Bump the `CACHE` name in `sw.js` and
-  set the same value as `appCacheId` in `config.js`; `scripts/check-sw-assets.js`
-  enforces the match. Settings shows the installed version and checks `sw.js`
-  when online for an optional PWA update.
+  keep `appCacheId` in `config.js`, `APP_BUILD_ID` in `app.js`, the HTML
+  `data-app-version`, and script/style release queries in `index.html` and `sw.js`
+  in sync. `scripts/check-sw-assets.js` enforces these matches. Deploy `sw.js`
+  last; see [docs/UPDATES.md](docs/UPDATES.md). Documentation-only edits do not
+  require a runtime release bump. Settings shows the installed version and checks
+  `sw.js` when online for an optional PWA update.
 
 ## Data integrity and portability
 
@@ -111,12 +114,18 @@ it when files, entry points or important data flows move or change.
 - Read the relevant implementation and focused documentation before changing it.
   Keep user documentation, compatibility notes and data-format descriptions aligned
   with the actual behaviour. Put detailed feature specifications in `docs/`.
+  Treat dated plans and design handovers as historical intent; verify current
+  claims against code, tests and the focused guides. Keep compatibility targets
+  distinct from verified device results, and cache availability distinct from
+  guaranteed offline coverage.
 - Run checks appropriate to the change. The baseline checks are defined in
   `.github/workflows/check.yml`: JavaScript syntax, incompatible syntax/API scan,
   manifest JSON validation and PHP checks for the station proxy.
 - Focused regression scripts live under `scripts/check-*.js` (data semantics,
   import/backup, calculations, migrations, binary plist/Jerrycan, fuels, promos,
-  price providers). CI runs them all; run the scripts that match your change area.
+  price providers, receipts, languages, storage and app updates). CI runs them all;
+  run the scripts that match your change area. [docs/TESTING.md](docs/TESTING.md)
+  lists the full static baseline and optional isolated browser checks.
 - For runtime changes, verify relevant online/offline flows and touch layouts.
   Data changes need meaningful checks for metadata preservation, backup round
   trips, migration and duplicate handling. Import failures and cancellation must

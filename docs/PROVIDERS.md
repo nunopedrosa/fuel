@@ -77,7 +77,7 @@ Station records carry provenance: `{sourceType, sourceId, priceType, sourceUpdat
 
 ## Canonical fuels
 
-`js/prices/fuels.js` defines `FuelLogFuels.LIST`: `PETROL_95`, `PETROL_95_E5`, `PETROL_95_E10`, `PETROL_98`, `DIESEL_B7`, `DIESEL_B10`, `DIESEL_PREMIUM`, `LPG`, `CNG`, `LNG`, `E85`, `ADBLUE`, plus `label()`, `related()` fallbacks and a multilingual `guess(text)`.
+`js/prices/fuels.js` defines `FuelLogFuels.LIST`: `PETROL_95`, `PETROL_95_ADDITIVATED`, `PETROL_95_E5`, `PETROL_95_E10`, `PETROL_98`, `PETROL_98_ADDITIVATED`, `DIESEL_B7`, `DIESEL_B10`, `DIESEL_PREMIUM`, `LPG`, `CNG`, `LNG`, `E85`, `ADBLUE`, plus `label()`, `related()` fallbacks and a multilingual `guess(text)`.
 
 Provider fuel keys map to canonical ids, e.g. DGEG `3201`→`PETROL_95`, `2101`→`DIESEL_B7`; Minetur `Precio Gasoleo A`→`DIESEL_B7`; FR `gazole`→`DIESEL_B7`, `e10`→`PETROL_95_E10`; BE product names and NL CBS fields map the same way. Canonical ids are stored on fill-ups (`fuelId`) and vehicles (`preferredFuel`).
 
@@ -85,9 +85,21 @@ Provider fuel keys map to canonical ids, e.g. DGEG `3201`→`PETROL_95`, `2101`�
 
 Fill-ups can record `stationId`, `country` and `fuelId`. The Prices page derives a private, local "Your history" price source from past fill-ups — "You paid €x.xxx/L here" on matching station cards and a per-station history block. This data never leaves the device.
 
+## Request timing
+
+Opening Prices loads the selected provider’s fuel/region catalogues and map tiles
+when needed. Belgium/Netherlands reference prices load on opening their Prices
+view. Station searches require a search action, including Find in the fill-up
+form. Local logging itself does not need these requests. The proxy is enabled in
+the checked-in configuration; static-only hosts must set `stationProxy: null`.
+
 ## Station proxy
 
-`api/stations.php` accelerates `pt-dgeg` (per-fuel file) and `es-minetur` (single ~10 MB nationwide file) datasets with an hourly server-side grid index, answering `POST {provider, fuel, lat, lon, radius}` from the same origin only. See README.
+`api/stations.php` accelerates `pt-dgeg` (per-fuel file) and `es-minetur` (single ~10 MB nationwide file) datasets with an hourly server-side grid index, answering `POST {provider, fuel, lat, lon, radius}` for the application. The handler rejects a supplied Origin with a different
+hostname; it does not authenticate clients and accepts requests without Origin.
+A `GET ?health` probe is also supported. `api/stations-functions.php` contains
+request validation, fixed upstream URLs, grid indexing and radius filtering. See
+[README](../README.md#station-proxy) and [SECURITY.md](../SECURITY.md).
 
 ## Excluded sources
 

@@ -4,9 +4,9 @@ FuelLog is a small, installable, **local-first fuel log Progressive Web App (PWA
 
 The application is designed around a simple rule: **personal vehicle and fill-up data belongs on the user's device, not on the web server**.
 
-FuelLog therefore needs no account, database, login, analytics service, cloud sync, or tracking infrastructure. DreamHost or GitHub Pages only serves the static application files plus one optional same-origin PHP script (`api/stations.php`, see [Station proxy](#station-proxy)). After the PWA application shell has been cached, normal fuel logging works offline and places almost no continuing load on the host.
+FuelLog therefore needs no account, server database, login, analytics service, cloud sync, or tracking infrastructure. DreamHost or GitHub Pages only serves the static application files plus an optional same-origin PHP endpoint and its helper (`api/stations.php` and `api/stations-functions.php`, see [Station proxy](#station-proxy)). After the PWA application shell has been cached, normal fuel logging works offline and places almost no continuing load on the host.
 
-Fuel-station prices for Portugal, Spain and France, plus official reference prices for Belgium and the Netherlands, are an optional online feature supplied by public/official data providers (see [Fuel price providers](#fuel-price-providers)). They are requested only when the user explicitly asks to find stations — via the same-origin station proxy when it is enabled in `config.js`, or directly by the user's browser from the public provider when the proxy is disabled or unavailable.
+Fuel-station prices for Portugal, Spain and France, plus official reference prices for Belgium and the Netherlands, are an optional online feature supplied by public/official data providers (see [Fuel price providers](#fuel-price-providers)). Station searches run on request via the same-origin proxy for Portugal/Spain when enabled in `config.js`, with direct-provider fallback. Opening Prices can also fetch fuel/region catalogues, map tiles and Belgium/Netherlands reference prices; cached responses are reused where available.
 
 ---
 
@@ -117,9 +117,9 @@ For the selected vehicle FuelLog displays:
 - offline application shell
 - **Settings → App** shows the installed version; when online, FuelLog checks whether a newer service-worker release is available and offers **Update app**
 - IndexedDB local database
-- no runtime JavaScript frameworks or third-party libraries
+- no runtime JavaScript framework; locally vendored Leaflet for maps and optional Tesseract for receipt OCR
 - no build step
-- no application backend (a single optional same-origin station-proxy script is the only server-side code)
+- no personal-data backend (the optional station proxy and its helper serve public station data)
 
 ---
 
@@ -180,7 +180,7 @@ See [PRIVACY.md](PRIVACY.md) for the focused privacy statement.
 ```text
                   fuel.trekm.com
                         |
-                        | static files only
+                        | static files + optional station proxy
                         v
                 Browser / PWA
              +--------------------+
@@ -320,7 +320,18 @@ When results open, the map fits stations in the area still visible above the she
 
 ## Settings
 
-Besides vehicles, brand promos, backup/import and feedback, the **App** card at the top shows the installed release (for example **v40**). While **online**, FuelLog fetches `sw.js` and compares its cache version to the copy you are running. If a newer release is available — or a waiting service worker is already downloaded — **Update app** activates it and reloads. **Offline** shows that the update check is unavailable; an already-downloaded update can still be applied.
+Besides vehicles, brand promos, backup/import and feedback, the **App** card at the top shows the installed release (the running build’s version). While **online**, FuelLog fetches `sw.js` and compares its cache version to the copy you are running. If a newer release is available — or a waiting service worker is already downloaded — **Update app** activates it and reloads. **Offline** shows that the update check is unavailable; an already-downloaded update can still be applied.
+
+### Storage
+
+The Storage card shows the estimated size of your saved log (vehicles, fill-ups,
+promos and settings) and the number of saved fill-ups. When supported, it also
+shows estimated browser storage used, quota and available space, including offline
+caches and other data on the same site. Older Safari shows **Available capacity
+unknown**. The additional-fill-up estimate divides available space by your current
+average serialized fill-up size; an empty log has no record estimate. Record sizes,
+database overhead, device free space and cache growth affect actual capacity.
+These figures are estimates, not guaranteed space.
 
 ## Adding a fill-up
 
@@ -556,10 +567,11 @@ It preserves:
 - vehicle objects
 - fill-up objects
 - stable record IDs
-- relevant application settings
+- user-defined brand promos
+- all persisted application settings
 - timestamps and optional fields
 
-Use JSON when the objective is to restore FuelLog or move the database to another browser/device.
+Use JSON when the objective is to restore FuelLog or move the database to another browser/device. Provider caches, map tiles, OCR assets and receipt photos are not included.
 
 The exported filename follows the pattern:
 
@@ -867,6 +879,10 @@ This is intentionally conservative and lightweight; it is not a universal semant
 
 Replace clears and writes the local vehicle and fill-up stores in one transaction,
 after preview confirmation. A failed transaction preserves the previous dataset.
+Native JSON replacement also replaces promos and writes backed-up settings,
+except `lastBackup` and `schemaMigrated`; it validates the active vehicle. Settings
+keys absent from the backup remain local. Generic/Jerrycan replacement does not
+replace promos or general preferences. Provider and map caches are not restored.
 
 Use replace only when the imported file should become the authoritative local dataset.
 
@@ -996,7 +1012,7 @@ Location permission belongs to the browser/operating system. When the station pr
 
 `api/stations.php` is an optional, dependency-free PHP 7.4+ endpoint intended for the DreamHost deployment. It is enabled by default via `stationProxy` in `config.js`; set it to `null` for a purely static host such as GitHub Pages.
 
-The proxy serves the Portuguese (`pt-dgeg`, one file per fuel type) and Spanish (`es-minetur`, a single ~8 MB nationwide dataset refreshed hourly on the server) providers. It fetches the upstream data at most once per hour, stores it in `api/cache/` as a 0.1° grid index, and answers `POST {provider, fuel, lat, lon, radius}` queries with the stations inside the radius. Phones therefore download only nearby stations instead of a multi-megabyte nationwide response. It accepts only same-origin POST requests, is not an open relay (the upstream URL is fixed and the only parameters are fuel, coordinates and radius), and never logs or persists the request coordinates. If the proxy fails, the app warns and falls back to querying the provider directly (where a direct mode exists).
+The proxy serves the Portuguese (`pt-dgeg`, one file per fuel type) and Spanish (`es-minetur`, a single ~8 MB nationwide dataset refreshed hourly on the server) providers. It fetches the upstream data at most once per hour, stores it in `api/cache/` as a 0.1° grid index, and answers `POST {provider, fuel, lat, lon, radius}` queries with the stations inside the radius. Phones therefore download only nearby stations instead of a multi-megabyte nationwide response. Searches use POST; a supplied Origin must have the same hostname, but this is not authentication and requests without Origin are accepted. `GET ?health` is a health probe. The proxy is not an arbitrary-URL relay: upstream URLs are fixed, with validated provider/fuel, coordinates and radius. The application code does not log or persist request coordinates. If the proxy fails, the app warns and falls back to querying the provider directly (where a direct mode exists).
 
 ## Price accuracy
 
@@ -1046,8 +1062,8 @@ If the network request fails and older cached data exists, FuelLog may use that 
 
 The Prices page uses a full-screen map with a bottom sheet for filters and results (see [Prices page](#prices-page)).
 
-- **Bundled low-zoom tiles** (`assets/map-tiles/`, z5–z7) ship with the app so a coarse map works offline after install.
-- **IndexedDB `mapTiles`** stores tiles fetched while online, per chosen map style (LRU cap ~32 MB). On the Prices map, a control lets you pick the online provider (default OpenTopoMap; optional OpenStreetMap street maps). Offline mode uses bundled terrain tiles plus cache. Avoid `tile.openstreetmap.org` for bulk/automated traffic; the optional osm.org style is user-initiated only.
+- **Bundled low-zoom tiles** (`assets/map-tiles/`) ship with the repository. Only their manifest is precached at installation; individual PNGs enter the service-worker cache when requested. Offline coverage therefore depends on areas previously viewed online, not just installation.
+- **IndexedDB `mapTiles`** stores tiles fetched while online, per chosen map style (oldest-write eviction, ~32 MB cap). On the Prices map, a control lets you pick the online provider (default OpenTopoMap; optional OpenStreetMap street maps). Offline mode uses bundled terrain tiles plus cache. Avoid `tile.openstreetmap.org` for bulk/automated traffic; the optional osm.org style is user-initiated only.
 - **`searchArchive:*` entries** in `priceCache` keep the last station searches (up to 20 snapshots, 7-day TTL, 500 stations each) plus `settings.lastPriceSearch` for reopening the Prices page offline.
 
 Regenerate bundled tiles after changing coverage:
@@ -1123,7 +1139,7 @@ Deployment is simply a static-file upload.
 
 1. Configure the `fuel.trekm.com` subdomain in DreamHost.
 2. Enable HTTPS, normally using DreamHost's Let's Encrypt support.
-3. Upload the repository contents to that domain's document root.
+3. Upload application assets, including the vendor directories and their `.htaccess` files; upload `sw.js` last as described in [UPDATES.md](docs/UPDATES.md).
 4. Open the site in a browser.
 5. Verify that the service worker registers and the app works after going offline.
 
@@ -1176,7 +1192,11 @@ http://localhost:8080/
 
 Browsers normally treat localhost as a secure-enough context for development features. Real deployment should use HTTPS.
 
-When shipping a new release, bump **`CACHE` in `sw.js`** and **`appCacheId` in `config.js`** to the same value, add any new static files to the service worker `ASSETS` list, and run `node scripts/check-sw-assets.js`.
+Start with [AGENTS.md](AGENTS.md) and [docs/CODEMAP.md](docs/CODEMAP.md). Run the baseline and relevant regressions in [docs/TESTING.md](docs/TESTING.md).
+
+For runtime releases, update `sw.js` `CACHE`, `config.js` `appCacheId`, `app.js` `APP_BUILD_ID`, and `index.html` `data-app-version` together, including script/style release queries in HTML and the service-worker asset list. Run `node scripts/check-sw-assets.js` and deploy `sw.js` last; see [docs/UPDATES.md](docs/UPDATES.md). Documentation-only changes need no cache bump.
+
+The Python server does not execute PHP. For local proxy requests use `php -S localhost:8080`; PHP’s development server does not apply Apache `.htaccess` headers.
 
 ## Publishing the repository
 
@@ -1195,7 +1215,7 @@ Do not commit deployment credentials or unrelated server files into the reposito
 
 ## Dependency philosophy
 
-The core application currently uses a single runtime third-party JavaScript dependency: a locally vendored copy of Leaflet 1.9.4 (`vendor/leaflet/`) that powers the optional station map. Everything else is dependency-free.
+FuelLog uses locally vendored Leaflet 1.9.4 (`vendor/leaflet/`) for maps and lazy-loaded Tesseract.js/core 5.1.1 (`vendor/tesseract/`) for optional receipt OCR. The Portuguese OCR model downloads on first use and is cached locally. Inter fonts are also bundled. Core logging needs no framework or package installation; see the vendor directories for third-party licences.
 
 This minimalism is intentional. Before introducing a dependency, consider:
 
@@ -1226,21 +1246,42 @@ For large optional functionality, prefer an explicit optional/on-demand mechanis
 |
 |-- api/
 |   |-- stations.php           optional same-origin radius-search proxy (PT/ES datasets)
+|   |-- stations-functions.php request validation, upstream fetching and grid search
 |   `-- cache/                 server-side station grid-index cache (denied via .htaccess)
 |
 |-- js/
+|   |-- i18n/                 language registry and English/Portuguese catalogues
+|   |-- ui-icons.js           inline UI symbols
+|   |-- data.js               shared intervals, currency and duplicate keys
+|   |-- analysis.js           history analysis calculations
+|   |-- analysis-ui.js        interactive SVG charts
+|   |-- receipt.js            Portuguese receipt parser
+|   |-- receipt-ocr.js        optional local OCR worker lifecycle
+|   |-- import/               binary plist decoder and Jerrycan normalizer
 |   `-- prices/               fuel catalogue and provider registry
 |       |-- fuels.js          canonical fuel ids and multilingual name matching
 |       |-- providers.js      provider registry and shared helpers
 |       |-- promos.js         brand-promo matching and effective-price helpers
+|       |-- offline-tiles.js  provider-aware bundled/online tile layer
 |       `-- providers/        pt-dgeg, es-minetur, fr-government, be-fps, nl-cbs
 |
 |-- docs/
+|   |-- CODEMAP.md            implementation entry points and data flows
+|   |-- TESTING.md            static, regression and browser checks
+|   |-- UPDATES.md            coherent releases and deployment recovery
+|   |-- I18N.md               language selection and translation maintenance
+|   |-- ANALYSIS.md           interval rules and diagnostic guidance
 |   |-- PROVIDERS.md          provider architecture, licences and data flows
 |   `-- FuelLog-Devin-European-Providers-Handover.md  design handover notes
 |
 |-- vendor/
-|   `-- leaflet/              vendored Leaflet 1.9.4 for the station map
+|   |-- leaflet/              vendored Leaflet 1.9.4 for the station map
+|   `-- tesseract/            optional OCR engine/core and worker CSP
+|
+|-- scripts/                  Node/PHP regressions, browser QA and tile generator
+|-- assets/map-tiles/          bundled terrain tiles and coverage manifest
+|-- fonts/                    locally bundled Inter fonts
+|-- AGENTS.md                 development requirements
 |
 |-- icons/
 |   |-- icon.svg               source/vector application artwork
@@ -1358,10 +1399,12 @@ Stores timestamped external reference/search results so repeated provider reques
 Key:
 
 ```text
-z/x/y
+key
 ```
 
-Stores PNG blobs for map tiles fetched while online (LRU eviction, ~32 MB cap).
+Tile keys include the provider and `z/x/y`. Records contain `key`, `blob`, `ts`
+and `size`; tiles fetched online are capped at approximately 32 MB. Eviction
+removes the oldest write timestamps; cache reads do not refresh their age.
 
 ## `promos`
 
@@ -1404,7 +1447,7 @@ The repository nevertheless includes several protective measures:
 - frame/clickjacking protection
 - restrictive referrer policy
 - permissions restrictions
-- no third-party runtime scripts
+- vendored map/OCR scripts served from the same origin; no CDN-hosted runtime scripts
 - no embedded API secret
 - output escaping for displayed user/imported text
 
@@ -1456,12 +1499,15 @@ Try a semicolon-separated CSV export from the spreadsheet application. FuelLog a
 Generic duplicate detection uses:
 
 ```text
-vehicle + date + odometer + litres
+vehicle + date/time + odometer + litres + currency + total cost
 ```
 
-Two genuinely different transactions that share all four values cannot be reliably distinguished by this lightweight heuristic. Conversely, changing one of these values may make an otherwise duplicated event look unique.
+Two genuinely different transactions that share all six values cannot be reliably distinguished by this lightweight heuristic. Conversely, changing one of these values may make an otherwise duplicated event look unique.
 
-FuelLog JSON backups preserve stable IDs and are preferable for exact restoration.
+FuelLog JSON backups preserve stable IDs and are preferable for restoration. Native
+backup merge skips identical fill-ups with matching IDs, keeps distinct IDs even
+when purchase values coincide, and remaps conflicting IDs to preserve both records.
+It preserves local settings; it is not a content-based reconciliation of edited logs.
 
 ## Price search does not work
 
@@ -1570,6 +1616,12 @@ In particular, changes should preserve:
 
 # Related documentation
 
+- [AGENTS.md](AGENTS.md) — development requirements
+- [docs/CODEMAP.md](docs/CODEMAP.md) — code entry points and data flows
+- [docs/TESTING.md](docs/TESTING.md) — verification commands and browser checks
+- [docs/UPDATES.md](docs/UPDATES.md) — release/deployment procedure
+- [docs/I18N.md](docs/I18N.md) — interface languages
+- [docs/ANALYSIS.md](docs/ANALYSIS.md) — calculations and diagnostics
 - [COMPATIBILITY.md](COMPATIBILITY.md) — old Safari/iPhone requirements and fallbacks
 - [PRIVACY.md](PRIVACY.md) — privacy behaviour
 - [SECURITY.md](SECURITY.md) — security notes and reporting
@@ -1584,14 +1636,3 @@ In particular, changes should preserve:
 FuelLog application source code and original FuelLog artwork are released under the **MIT License**. See [LICENSE](LICENSE).
 
 External provider data is not part of the repository and remains subject to each provider's terms and conditions.
-
-### Storage in Settings
-
-The Storage card shows the estimated size of your saved log (vehicles, fill-ups,
-promos and settings) and the number of saved fill-ups. When supported, it also
-shows estimated browser storage used, quota and available space, including offline
-caches and other data on the same site. Older Safari shows **Available capacity
-unknown**. The additional-fill-up estimate divides available space by your current
-average serialized fill-up size; an empty log has no record estimate. Record sizes,
-database overhead, device free space and cache growth affect actual capacity.
-These figures are estimates, not guaranteed space.
