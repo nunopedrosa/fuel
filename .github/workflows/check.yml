@@ -40,6 +40,7 @@ jobs:
           node scripts/check-providers.js
           node scripts/check-storage.js
           node scripts/check-i18n.js
+          node scripts/check-device-language.js
           node scripts/check-sw-assets.js
           node scripts/check-sw-update.js
           node scripts/check-app-update.js

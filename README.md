@@ -259,7 +259,9 @@ Chrome, Edge and other PWA-capable browsers can install FuelLog as a desktop web
 # Interface language
 
 Use the flag in the top-right corner, next to feedback, to choose **English** or
-**Português (Portugal)**. The language choice is saved locally and works offline.
+**Português (Portugal)**. With no saved choice, the app uses the first supported
+device language, falling back to English. Any explicit selection is saved locally
+and remains in use even if the device language later changes. This works offline.
 It changes interface text and date/number presentation independently of the
 country flag used for station searches. Your records, currency and units stay the
 same. The language button remains visible when feedback is hidden.

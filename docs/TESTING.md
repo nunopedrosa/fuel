@@ -25,6 +25,7 @@ php scripts/check-stations.php
 | `check-migrate.js` | `migrateData` and schema settings |
 | `check-providers.js` | All EU adapters (fixtures), registry and proxy contract |
 | `check-storage.js` | UTF-8 log/metadata sizes, browser quota and remaining space, missing/failed/invalid estimates, empty logs and translations |
+| `check-device-language.js` | Device preference order, regional matching, older-browser fallback, manual/current-language lock and country independence |
 | `check-i18n.js` | Language keys/placeholders, fallback, diagnostics, locale formatting, user text and canonical CSV stability |
 | `check-sw-assets.js` | Asset files, exact release query URLs and HTML/config/app/worker markers |
 | `check-sw-update.js` | Fresh precache, coherent navigation, update metadata, worker replies and rejected incomplete releases |
@@ -93,7 +94,8 @@ With the local server and Playwright available, run `node scripts/browser-i18n.c
 The `FUELLOG_QA_URL`, `FUELLOG_QA_PLAYWRIGHT` and `FUELLOG_QA_CHROMIUM` overrides
 apply. This uses synthetic local data and checks the header selector at 375/320px,
 independence from station country, form/metadata preservation, History filters,
-reference-price cards, translated chart tabs and offline reload/switching. It does
+reference-price cards, translated chart tabs and offline reload/switching. It also
+checks device defaults and manual choices surviving subsequent device-language changes. It does
 not establish Safari 12 or physical iPhone 6/Home Screen compatibility.
 
 ## Installed-release upgrade regression

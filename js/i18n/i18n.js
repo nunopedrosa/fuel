@@ -8,6 +8,18 @@ window.FuelLogI18n = (function () {
     diagnostics = null;
   }
   function use(code) { selected = Object.prototype.hasOwnProperty.call(catalogues,code) ? code : 'en'; return selected; }
+  // Only an explicit app choice is saved; device preferences remain a default.
+  function resolve(saved, preferences) {
+    if (saved) return Object.prototype.hasOwnProperty.call(catalogues,saved) ? saved : 'en';
+    var preferred = Array.isArray(preferences) ? preferences : [];
+    for (var i = 0; i < preferred.length; i++) {
+      if (typeof preferred[i] !== 'string') continue;
+      var tag = preferred[i].trim().toLowerCase().replace(/_/g,'-'), base = tag.split('-')[0], j;
+      for (j = 0; j < languages.length; j++) if (languages[j].code.toLowerCase() === tag || languages[j].locale.toLowerCase() === tag) return languages[j].code;
+      for (j = 0; j < languages.length; j++) if (languages[j].code.toLowerCase() === base) return languages[j].code;
+    }
+    return 'en';
+  }
   function current() { return selected; }
   function list() { return languages.slice(); }
   function locale() { var item=languages.filter(function(x){return x.code===selected;})[0];return item?item.locale:'en-GB'; }
@@ -33,7 +45,7 @@ window.FuelLogI18n = (function () {
     for(var i=0;i<diagnostics.patterns.length;i++){var item=diagnostics.patterns[i],match=text.match(item.re);if(match){var values={};item.names.forEach(function(name,j){values[name]=match[j+1];});return t(item.key,values);}}
     return text;
   }
-  return {register:register,use:use,current:current,list:list,locale:locale,t:t,messages:messages,message:message};
+  return {register:register,use:use,resolve:resolve,current:current,list:list,locale:locale,t:t,messages:messages,message:message};
 })();
 // Shared browser helpers, also used by the deferred chart and receipt modules.
 function tr(key, values) { return window.FuelLogI18n.t(key, values); }

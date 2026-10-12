@@ -1,13 +1,22 @@
 // Optional real-browser language and offline flow check. Uses an isolated synthetic log.
 const {chromium}=require(process.env.FUELLOG_QA_PLAYWRIGHT||'playwright');
 const assert=require('assert');
+async function openReadyApp(page,url){
+ // Install the actual offline shell from a non-app document so its initial
+ // controller-change reload cannot interrupt the first UI assertions.
+ await page.goto(new URL('config.js',url).href);
+ await page.evaluate(async()=>{await navigator.serviceWorker.register(new URL('sw.js',location.href).href);await navigator.serviceWorker.ready;});
+ await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
+ await page.goto(url);
+ await page.waitForFunction(()=>state.vehicles.length>0&&!document.querySelector('#app').classList.contains('startup-loading'));
+}
+
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.FUELLOG_QA_CHROMIUM||undefined});
  try{
   const context=await browser.newContext({viewport:{width:375,height:667},isMobile:true,hasTouch:true});
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>{errors.push(e.message);console.error('Browser error:',e.message)});
-  await page.goto(process.env.FUELLOG_QA_URL||'http://127.0.0.1:8765');await page.waitForFunction(()=>state.vehicles.length>0).catch(async e=>{console.error(await page.locator('body').innerText());throw e;});
-  await page.evaluate(async()=>{await navigator.serviceWorker.ready;});await page.waitForFunction(()=>!!navigator.serviceWorker.controller&&state.vehicles.length>0);
+  await openReadyApp(page,process.env.FUELLOG_QA_URL||'http://127.0.0.1:8765');
   assert.equal(await page.locator('#languageButton').count(),1,'flag language selector must exist in the header');
   async function language(code){await page.locator('#languageButton').click();await page.locator('[data-language="'+code+'"]').click();await page.waitForFunction(c=>FuelLogI18n.current()===c,code);}
   await page.evaluate(async()=>{await setSetting('priceCountry','ES');await setSetting('suggestBtn',false);render();});
@@ -44,5 +53,25 @@ const assert=require('assert');
   await context.setOffline(true);await page.reload();await page.waitForFunction(()=>state.vehicles.length>0).catch(async e=>{console.error(await page.locator('body').innerText());throw e;});
   assert.equal(await page.locator('#languageButton').innerText(),'🇵🇹');assert.equal(await page.evaluate(()=>state.settings.priceCountry),'ES');await language('en');await language('pt');
   assert.deepEqual(errors,[]);console.log('375/320px flag selector, independent country, drafts/imported precision, History filters, reference prices, charts and offline persistence passed');
+  const automatic=await browser.newContext({locale:'pt-BR',viewport:{width:375,height:667},isMobile:true,hasTouch:true});
+  // Simulate an OS language change on subsequent launches without altering the app setting.
+  await automatic.addInitScript(()=>{const language=localStorage.getItem('qa-device-language')||'pt-BR';Object.defineProperty(navigator,'language',{get:()=>language});Object.defineProperty(navigator,'languages',{get:()=>[language]});});
+  const autoPage=await automatic.newPage();autoPage.on('pageerror',e=>errors.push(e.message));
+  const url=process.env.FUELLOG_QA_URL||'http://127.0.0.1:8765';
+  async function readyAuto(){await autoPage.waitForFunction(async()=>state.vehicles.length>0&&navigator.serviceWorker.controller&&!swReloading&&!document.querySelector('#app').classList.contains('startup-loading')&&await requestWorkerVersion(navigator.serviceWorker.controller)===appCacheId());}
+  await openReadyApp(autoPage,url);await readyAuto();
+  assert.equal(await autoPage.locator('#languageButton').innerText(),'🇵🇹');assert.equal(await autoPage.evaluate(()=>state.settings.language),null);assert.ok(await autoPage.evaluate(async()=>!(await FuelDB.get('settings','language'))));
+  await autoPage.evaluate(async()=>{await setSetting('priceCountry','ES');localStorage.setItem('qa-device-language','en-US');});await autoPage.reload();await readyAuto();
+  assert.equal(await autoPage.locator('#languageButton').innerText(),'🇬🇧');assert.equal(await autoPage.evaluate(()=>state.settings.language),null);assert.equal(await autoPage.evaluate(()=>state.settings.priceCountry),'ES');
+  await autoPage.evaluate(()=>localStorage.setItem('qa-device-language','pt-PT'));await autoPage.reload();await readyAuto();
+  await autoPage.locator('#languageButton').click();await autoPage.locator('[data-language="pt"]').click();await autoPage.waitForFunction(()=>state.settings.language==='pt');
+  assert.equal(await autoPage.evaluate(async()=>(await FuelDB.get('settings','language')).value),'pt');
+  await autoPage.evaluate(()=>localStorage.setItem('qa-device-language','en-US'));await automatic.setOffline(true);await autoPage.reload();await readyAuto();
+  assert.equal(await autoPage.locator('#languageButton').innerText(),'🇵🇹');assert.equal(await autoPage.evaluate(()=>state.settings.priceCountry),'ES');
+  await autoPage.locator('#languageButton').click();await autoPage.locator('[data-language="en"]').click();await autoPage.waitForFunction(()=>state.settings.language==='en');
+  await autoPage.evaluate(()=>localStorage.setItem('qa-device-language','pt-PT'));await autoPage.reload();await readyAuto();assert.equal(await autoPage.locator('#languageButton').innerText(),'🇬🇧');
+  const unsupported=await browser.newContext({locale:'fr-FR'}),fallbackPage=await unsupported.newPage();fallbackPage.on('pageerror',e=>errors.push(e.message));await openReadyApp(fallbackPage,url);await fallbackPage.waitForFunction(()=>state.vehicles.length>0&&navigator.serviceWorker.controller&&!swReloading&&!document.querySelector('#app').classList.contains('startup-loading'));assert.equal(await fallbackPage.locator('#languageButton').innerText(),'🇬🇧');assert.equal(await fallbackPage.evaluate(()=>state.settings.language),null);
+  assert.deepEqual(errors,[]);console.log('device defaults, unsupported-language fallback, current-language explicit choice, changed-device override and offline persistence passed');
+
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

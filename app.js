@@ -1,4 +1,4 @@
-const APP_BUILD_ID = 'fuellog-v44-storage';
+const APP_BUILD_ID = 'fuellog-v45-device-language';
 const $=(s,r=document)=>r.querySelector(s);const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
 const uid=()=>((window.crypto&&typeof window.crypto.randomUUID==='function')?window.crypto.randomUUID():`id-${Date.now()}-${Math.random().toString(16).slice(2)}`);
 const euro=n=>new Intl.NumberFormat(uiLocale(),{style:'currency',currency:'EUR'}).format(Number(n||0));
@@ -42,10 +42,11 @@ function restoreLanguageDraft(draft){
 }
 async function changeLanguage(code){
   closeLanguageChoices(false);
-  if(code===window.FuelLogI18n.current()){closeLanguageChoices(true);return}
+  const sameLanguage=code===window.FuelLogI18n.current();
+  if(sameLanguage&&state.settings.language===code){closeLanguageChoices(true);return}
   const button=$('#languageButton'),draft=captureLanguageDraft();button.disabled=true;
   try{
-    await setSetting('language',code);window.FuelLogI18n.use(code);
+    await setSetting('language',code);if(sameLanguage){closeLanguageChoices(true);return}window.FuelLogI18n.use(code);
     if(state.route==='prices'){state.languagePriceDraft={fuel:($('#priceFuel')||{}).value||'',region:($('#priceRegion')||{}).value||'',radius:($('#radius')||{}).value||'10'};if(priceMap&&priceMap.map)persistMapView(priceMap.map)}
     render(draft);closeLanguageChoices(true);
   }catch(error){console.error('Language selection failed',error);toast(window.FuelLogI18n.message('Could not save language choice.'))}finally{button.disabled=false}
@@ -66,7 +67,7 @@ function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show'
 function appDialog(opts){const root=$('#modalRoot'),title=$('#modalTitle'),body=$('#modalBody'),ok=$('#modalConfirm'),cancel=$('#modalCancel');if(!root)return Promise.resolve(false);title.textContent=opts.title||'';if(opts.html)body.innerHTML=opts.html;else body.textContent=opts.body||'';ok.textContent=opts.confirmLabel||tr("ui.ok");ok.className='btn'+(opts.danger?' danger':'');const showCancel=opts.cancelLabel!==null;cancel.classList.toggle('hidden',!showCancel);if(showCancel)cancel.textContent=opts.cancelLabel||tr("ui.cancel");root.classList.remove('hidden');root.setAttribute('aria-hidden','false');ok.focus();return new Promise(resolve=>{const finish=v=>{if(v&&opts.collect){v=opts.collect();if(v===null)return}root.classList.add('hidden');root.setAttribute('aria-hidden','true');root.removeEventListener('click',onClick);document.removeEventListener('keydown',onKey);resolve(v)};const onClick=e=>{if(e.target===ok)finish(true);else if(e.target===cancel||(e.target&&e.target.hasAttribute&&e.target.hasAttribute('data-modal-cancel')))finish(false)};const onKey=e=>{if(e.key==='Escape'&&showCancel)finish(false)};root.addEventListener('click',onClick);document.addEventListener('keydown',onKey)})}
 async function setting(key,fallback=null){const r=await FuelDB.get('settings',key);return r&&r.value!==undefined?r.value:fallback}
 async function setSetting(key,value){await FuelDB.put('settings',{key,value});state.settings[key]=value}
-async function refresh(){state.vehicles=await FuelDB.all('vehicles');state.fillups=(await FuelDB.all('fillups')).sort((a,b)=>new Date(b.date)-new Date(a.date));state.promos=(await FuelDB.all('promos'))||[];for(const k of ['activeVehicle','fuelTypeId','lastBackup','priceCountry','promoFillLitres','suggestBtn','mapView','priceSheetSnap','cacheMapTiles','mapOnlineProvider','defaultCurrency','language'])state.settings[k]=await setting(k,null);window.FuelLogI18n.use(state.settings.language||'en')}
+async function refresh(){state.vehicles=await FuelDB.all('vehicles');state.fillups=(await FuelDB.all('fillups')).sort((a,b)=>new Date(b.date)-new Date(a.date));state.promos=(await FuelDB.all('promos'))||[];for(const k of ['activeVehicle','fuelTypeId','lastBackup','priceCountry','promoFillLitres','suggestBtn','mapView','priceSheetSnap','cacheMapTiles','mapOnlineProvider','defaultCurrency','language'])state.settings[k]=await setting(k,null);window.FuelLogI18n.use(window.FuelLogI18n.resolve(state.settings.language,navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language]))}
 function mapOnlineProviderId(){const d=window.FuelLogOfflineTiles&&FuelLogOfflineTiles.defaultProvider||'opentopomap';return state.settings.mapOnlineProvider||d}
 function mapProviderOptionsHtml(selected){const list=window.FuelLogOfflineTiles?FuelLogOfflineTiles.listProviders():[{id:'opentopomap',label:tr("ui.terrain_opentopomap")}];return list.map(p=>`<option value="${esc(p.id)}" ${p.id===selected?'selected':''}>${esc(window.FuelLogI18n.message(p.label))}</option>`).join('')}
 function syncMapProviderControl(){const sel=$('#mapOnlineProvider');if(!sel)return;const off=!navigator.onLine;sel.disabled=off;sel.title=off?tr("ui.offline_bundled_terrain_map_only"):tr("ui.map_style_while_online")}

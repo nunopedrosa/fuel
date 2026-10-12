@@ -136,3 +136,10 @@ responses show **Available capacity unknown**. Browser totals include same-origi
 caches and other storage. Remaining capacity and additional-fill-up counts are
 estimates, excluding database overhead from average record size; they are not
 guaranteed writable space. No storage probe writes or new dependencies are used.
+
+Device-language defaults use `navigator.languages` when available and fall back
+to `navigator.language`, matching regional tags to the bundled language catalogue.
+Detection is local and needs no new API, dependency or network request. Saved app
+choices override device settings; selecting the current language also persists a
+choice. Chromium covers changed device preferences and offline persistence; the
+Safari 12 / physical iPhone 6 limitations above still apply.
