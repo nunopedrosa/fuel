@@ -25,7 +25,9 @@ php scripts/check-stations.php
 | `check-migrate.js` | `migrateData` and schema settings |
 | `check-providers.js` | All EU adapters (fixtures), registry and proxy contract |
 | `check-i18n.js` | Language keys/placeholders, fallback, diagnostics, locale formatting, user text and canonical CSV stability |
-| `check-sw-assets.js` | `sw.js` ASSETS vs disk and `index.html` scripts |
+| `check-sw-assets.js` | Asset files, exact release query URLs and HTML/config/app/worker markers |
+| `check-sw-update.js` | Fresh precache, coherent navigation, update metadata, worker replies and rejected incomplete releases |
+| `check-app-update.js` | Worker lifecycle, offline activation, stale-page reload and failed-install feedback |
 | `check-fuels.js` | Fuel catalogue matching, Portuguese commercial names and additive/simple distinctions |
 | `check-promos.js` | Promo stacking rules |
 | `check-receipt.js` | Portuguese receipt parsing, compact litre units, product-code separation, discounted-total warnings and station-price replacement confirmation, wrapped commercial fuel names and ambiguous fuels |
@@ -92,3 +94,12 @@ apply. This uses synthetic local data and checks the header selector at 375/320p
 independence from station country, form/metadata preservation, History filters,
 reference-price cards, translated chart tabs and offline reload/switching. It does
 not establish Safari 12 or physical iPhone 6/Home Screen compatibility.
+
+## Installed-release upgrade regression
+
+`node scripts/browser-update.cjs` starts an isolated local server with deliberately
+long HTTP caching. It uses the v41/v42 Git snapshots to reproduce the mixed release
+and inert language flag, then verifies recovery with the current source. It checks
+failed downloads/incomplete uploads, update-button feedback, local record precision
+and provenance, language persistence and offline reload. The Playwright/Chromium
+overrides apply; see [UPDATES.md](UPDATES.md) for the release and deployment contract.

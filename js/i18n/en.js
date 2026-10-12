@@ -497,5 +497,7 @@ window.FuelLogI18n.register("en",{"name": "English", "locale": "en-GB", "flag": 
   "diagnostic.road_openstreetmap": "Road (OpenStreetMap)",
   "diagnostic.terrain_offline": "Terrain (offline)",
   "diagnostic.count_partial": "{count} partial",
-  "diagnostic.records": "records"
+  "diagnostic.records": "records",
+  "update.download_failed": "The update could not be downloaded completely. Check your connection and try again.",
+  "update.check_failed": "Could not check for updates. Try again when connected."
 });

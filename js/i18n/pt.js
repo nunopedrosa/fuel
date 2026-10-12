@@ -497,5 +497,7 @@ window.FuelLogI18n.register("pt",{"name": "Português", "locale": "pt-PT", "flag
   "diagnostic.road_openstreetmap": "Estradas (OpenStreetMap)",
   "diagnostic.terrain_offline": "Relevo (offline)",
   "diagnostic.count_partial": "{count} parciais",
-  "diagnostic.records": "registos"
+  "diagnostic.records": "registos",
+  "update.download_failed": "Não foi possível transferir a atualização completa. Verifique a ligação e tente novamente.",
+  "update.check_failed": "Não foi possível procurar atualizações. Tente novamente com ligação à Internet."
 });

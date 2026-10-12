@@ -37,9 +37,9 @@ analysis, import and receipt OCR scripts load after first paint via
 | User-observed prices and provenance | [app.js](../app.js) | `userStationPrices`, `userHistoryHtml`, `youPaidHtml`, `stationProvHtml`, `logFillAt` |
 | Brand promos and effective prices | [js/prices/promos.js](../js/prices/promos.js), [app.js](../app.js) | `FuelLogPromos`, `stationOffer`, `stationSortPrice`, `promoFillLitres`, `fillPromoPrice`, `promoDialog`, `wirePromoForm` |
 | Map and Prices bottom sheet | [app.js](../app.js), [styles.css](../styles.css) | `ensureMap`, `updateMap`, `wirePriceSheet`, `setPriceSheetSnap`, `refitMapToResults`, `priceMapFitPadding`, `syncPriceMapSize`, `centerMapOnUser` |
-| Settings and app updates | [app.js](../app.js), [config.js](../config.js), [sw.js](../sw.js) | `settingsPage`, `wireSettingsVersion`, `checkAppUpdate`, `applyPwaUpdate`, `registerFuelServiceWorker`, `FUELLOG_CONFIG.appCacheId` |
+| Settings and app updates | [app.js](../app.js), [config.js](../config.js), [sw.js](../sw.js) | `settingsPage`, `wireSettingsVersion`, `checkAppUpdate`, `applyPwaUpdate`, `waitForInstallingWorker`, `requestWorkerVersion`, `registerFuelServiceWorker`, `APP_BUILD_ID`; [UPDATES.md](UPDATES.md) |
 | Offline maps and search history | [js/prices/offline-tiles.js](../js/prices/offline-tiles.js), [db.js](../db.js), [app.js](../app.js) | `FuelLogOfflineTiles`, `putMapTile`, `getMapTile`, `evictMapTiles`, `archivePriceSearch`, `restorePriceSearchFromArchive` |
-| App shell, updates and installation | [sw.js](../sw.js), [config.js](../config.js), [manifest.webmanifest](../manifest.webmanifest), [index.html](../index.html) | `CACHE` (must match `appCacheId`), `ASSETS`, `SKIP_WAITING` message handler; `registerFuelServiceWorker` and install prompt in `init` |
+| App shell, updates and installation | [sw.js](../sw.js), [config.js](../config.js), [manifest.webmanifest](../manifest.webmanifest), [index.html](../index.html) | `CACHE` (matches HTML/config/`APP_BUILD_ID`), versioned `ASSETS`, `verifyShellRelease`, `SKIP_WAITING`/`GET_VERSION` message handlers; `registerFuelServiceWorker` and install prompt in `init` |
 | Styling and old-Safari behaviour | [styles.css](../styles.css), [COMPATIBILITY.md](../COMPATIBILITY.md) | Layout fallbacks and shared 16 px `.field` editing controls; `FuelProviders.legacyIOS`, `download`, regional search paths |
 | Checks | [.github/workflows/check.yml](../.github/workflows/check.yml), [docs/TESTING.md](TESTING.md), [scripts/check-*.js](../scripts/) | Syntax/iOS-12 scan, manifest/PHP proxy; Node/PHP regression scripts (see TESTING.md) |
 
@@ -49,6 +49,9 @@ source policies are documented in [PROVIDERS.md](PROVIDERS.md).
 
 ## Main data flows
 
+- **Updates:** fresh complete precache → verify HTML/config/app release markers →
+  activate → one controller-change reload. Navigation and assets come from the
+  same installed cache; `sw.js` checks bypass it. See [UPDATES.md](UPDATES.md).
 - **Startup:** service worker registration (also inlined in `index.html`) → `init`
   → `FuelDB.open` → `refresh` → default vehicle when needed → `migrateData`
   → `render` (replaces placeholder) → `loadDeferredScripts` after first paint.
@@ -125,10 +128,11 @@ user's fuel log. `.htaccess` and `api/cache/.htaccess` control hosting/cache acc
 - **New provider or fuel:** catalogue, registry/adapters, optional proxy mappings,
   UI units/provenance, offline assets and provider documentation.
 - **New runtime file or cached asset:** `index.html` script/style references,
-  `sw.js` asset list and `CACHE` bump, matching `appCacheId` in `config.js`
+  `sw.js` asset list/release queries and `CACHE` bump, matching `APP_BUILD_ID`,
+  HTML `data-app-version` and `appCacheId` in `config.js`
   (`scripts/check-sw-assets.js`), and offline verification.
-- **App version bump:** change `CACHE` in `sw.js` and `appCacheId` in `config.js`
-  together; Settings compares the installed id to a network fetch of `sw.js` when
+- **App version bump:** change the full release identifier in `sw.js`, `config.js`,
+  `index.html` (marker/script/style queries) and `app.js` (`APP_BUILD_ID`) together; Settings compares the installed id to a network fetch of `sw.js` when
   online and applies waiting service workers via **Update app**.
 - **New map behaviour:** `app.js`, `styles.css`, offline tile layer, IndexedDB
   caches and [COMPATIBILITY.md](../COMPATIBILITY.md). Bundled tile generation lives

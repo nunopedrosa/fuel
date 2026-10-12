@@ -113,3 +113,15 @@ inline SVG with translated names; consequential actions keep text. Language
 switching preserves unsaved forms and imported numeric precision.
 Chromium checks cover narrow touch layouts and offline persistence. Safari 12,
 a physical iPhone 6 and installed Home Screen behavior remain unverified.
+
+## Coherent release updates
+
+The worker uses the existing Cache Storage, Fetch/Request and client-message APIs.
+Fresh `cache: 'reload'` precache requests bypass stale HTTP responses; release
+markers are checked as text before activation. The installed HTML and versioned
+scripts stay together offline. Update waiting/active worker checks use ordinary
+message/statechange listeners with bounded timeouts, including activation of an
+already downloaded update while offline. No IndexedDB store/schema changes or
+runtime dependencies are involved. Regression tests include an existing v41
+installation and a poisoned v42 cache, rather than only a fresh profile. Actual
+Safari 12 and physical iPhone 6/Home Screen upgrade behavior remain unverified.

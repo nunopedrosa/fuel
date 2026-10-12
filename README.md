@@ -1022,7 +1022,7 @@ The service worker stores the application shell, including first-party resources
 
 This allows the installed application to start and perform core logging while offline.
 
-Each release bumps the `CACHE` name in `sw.js` and the matching `appCacheId` in `config.js` (checked in CI). Users can install updates from **Settings → App** when online instead of relying only on a manual reload.
+Each release pins HTML and runtime URLs to the same `CACHE`/configuration/application build (checked in CI). The worker downloads fresh assets, verifies the shell release, then activates it; navigation keeps the installed HTML and scripts together. See [App-shell updates](docs/UPDATES.md). Users can install updates from **Settings → App** when online instead of relying only on a manual reload.
 
 The service worker deliberately does not treat external provider responses as ordinary application-shell assets.
 
@@ -1491,7 +1491,7 @@ While **online**, open **Settings → App**. If an update is available, tap **Up
 1. close all FuelLog windows;
 2. reopen the application while online;
 3. reload it;
-4. if necessary, remove/re-add the Home Screen app or clear only the application cache with care.
+4. confirm all release files and `.htaccess` were uploaded, with `sw.js` last; see [update recovery](docs/UPDATES.md). Do not clear site storage or IndexedDB to repair an app-shell update.
 
 **Do not clear all site data without first exporting a backup**, because IndexedDB contains the user's fuel records.
 

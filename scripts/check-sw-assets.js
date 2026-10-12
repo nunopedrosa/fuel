@@ -30,7 +30,7 @@ html.replace(/<script(?:\s+defer)?\s+src="([^"]+)"/g, function (_, src) { script
 scripts.forEach(function (src) {
   const base = src.split('?')[0];
   assert.ok(fs.existsSync(path.join(root, base)), 'index.html script missing on disk: ' + src);
-  const inSw = assets.some(function (a) { return a.split('?')[0] === base; });
+  const inSw = assets.indexOf(src) >= 0;
   assert.ok(inSw, 'index.html script must be listed in sw.js ASSETS: ' + src);
 });
 
@@ -43,4 +43,14 @@ const configCacheMatch = config.match(/appCacheId:\s*'([^']+)'/);
 assert.ok(configCacheMatch, 'config.js must define appCacheId');
 assert.equal(configCacheMatch[1], cacheMatch[1], 'config.js appCacheId must match sw.js CACHE');
 
+const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+const buildMatch = app.match(/const APP_BUILD_ID = '([^']+)'/);
+assert.ok(buildMatch, 'app.js must identify its own running build');
+assert.equal(buildMatch[1], cacheMatch[1], 'running application build must match sw.js CACHE');
+const htmlBuild = html.match(/data-app-version="([^"]+)"/);
+assert.ok(htmlBuild, 'HTML must identify its app release');
+assert.equal(htmlBuild[1], cacheMatch[1], 'HTML release must match sw.js CACHE');
+assets.filter(asset => /\.(js|css)(\?|$)/.test(asset)).forEach(asset => {
+  assert.equal(asset.split('?')[1], 'v=' + cacheMatch[1], 'runtime asset must use the release version: ' + asset);
+});
 console.log('service worker asset checks passed (' + assets.length + ' assets, ' + scripts.length + ' scripts)');
