@@ -1,5 +1,17 @@
 // English UI catalogue. Keep keys and placeholders aligned with the other languages.
 window.FuelLogI18n.register("en",{"name": "English", "locale": "en-GB", "flag": "🇬🇧"},{
+  "storage.title": "Storage",
+  "storage.checking": "Checking storage…",
+  "storage.log": "Saved log data (estimate)",
+  "storage.count": "Saved fill-ups",
+  "storage.used": "Browser storage used (estimate)",
+  "storage.available": "Available space (estimate)",
+  "storage.quota": "Browser storage quota (estimate)",
+  "storage.records": "Additional fill-ups that may fit (estimate)",
+  "storage.unknown": "Unknown",
+  "storage.capacity_unknown": "Available capacity unknown",
+  "storage.add_record": "Add a fill-up to estimate record size",
+  "storage.explanation": "Saved log size estimates the UTF-8 JSON payload of vehicles, fill-ups, promos and settings, excluding database overhead. Browser usage includes offline caches and other storage on this site. Additional fill-ups = available space ÷ average saved fill-up size. Record sizes, database overhead and cache growth vary; browser quota is not guaranteed free space.",
   "nav.home": "Home",
   "nav.fillup": "Fill-up",
   "nav.history": "History",

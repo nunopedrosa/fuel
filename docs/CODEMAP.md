@@ -37,7 +37,7 @@ analysis, import and receipt OCR scripts load after first paint via
 | User-observed prices and provenance | [app.js](../app.js) | `userStationPrices`, `userHistoryHtml`, `youPaidHtml`, `stationProvHtml`, `logFillAt` |
 | Brand promos and effective prices | [js/prices/promos.js](../js/prices/promos.js), [app.js](../app.js) | `FuelLogPromos`, `stationOffer`, `stationSortPrice`, `promoFillLitres`, `fillPromoPrice`, `promoDialog`, `wirePromoForm` |
 | Map and Prices bottom sheet | [app.js](../app.js), [styles.css](../styles.css) | `ensureMap`, `updateMap`, `wirePriceSheet`, `setPriceSheetSnap`, `refitMapToResults`, `priceMapFitPadding`, `syncPriceMapSize`, `centerMapOnUser` |
-| Settings and app updates | [app.js](../app.js), [config.js](../config.js), [sw.js](../sw.js) | `settingsPage`, `wireSettingsVersion`, `checkAppUpdate`, `applyPwaUpdate`, `waitForInstallingWorker`, `requestWorkerVersion`, `registerFuelServiceWorker`, `APP_BUILD_ID`; [UPDATES.md](UPDATES.md) |
+| Settings and app updates | [app.js](../app.js), [config.js](../config.js), [sw.js](../sw.js) | `settingsPage`, `savedLogStorage`, `wireSettingsStorage`, `wireSettingsVersion`, `checkAppUpdate`, `applyPwaUpdate`, `waitForInstallingWorker`, `requestWorkerVersion`, `registerFuelServiceWorker`, `APP_BUILD_ID`; [UPDATES.md](UPDATES.md) |
 | Offline maps and search history | [js/prices/offline-tiles.js](../js/prices/offline-tiles.js), [db.js](../db.js), [app.js](../app.js) | `FuelLogOfflineTiles`, `putMapTile`, `getMapTile`, `evictMapTiles`, `archivePriceSearch`, `restorePriceSearchFromArchive` |
 | App shell, updates and installation | [sw.js](../sw.js), [config.js](../config.js), [manifest.webmanifest](../manifest.webmanifest), [index.html](../index.html) | `CACHE` (matches HTML/config/`APP_BUILD_ID`), versioned `ASSETS`, `verifyShellRelease`, `SKIP_WAITING`/`GET_VERSION` message handlers; `registerFuelServiceWorker` and install prompt in `init` |
 | Styling and old-Safari behaviour | [styles.css](../styles.css), [COMPATIBILITY.md](../COMPATIBILITY.md) | Layout fallbacks and shared 16 px `.field` editing controls; `FuelProviders.legacyIOS`, `download`, regional search paths |
@@ -111,6 +111,13 @@ source policies are documented in [PROVIDERS.md](PROVIDERS.md).
 `vehicleId`. `commitImport` writes affected stores atomically and resolves on transaction
 completion. Store/index upgrades live in `FuelDB.open`; record normalization
 and settings migrations live in `app.js`.
+
+Settings → Storage estimates the UTF-8 JSON payload of all saved fill-ups, vehicles,
+promos and persisted settings, one record at a time. Browser usage/quota comes from
+feature-detected `navigator.storage.estimate()` and includes caches and other
+same-origin storage; missing, rejected or invalid estimates show unknown capacity.
+Additional fill-ups divide remaining quota by average serialized fill-up size,
+without promising that many records will fit. Empty logs have no record estimate.
 
 Service-worker Cache Storage in `sw.js` is separate from IndexedDB. The optional
 PHP proxy caches public station datasets in `api/cache/`; it does not store the

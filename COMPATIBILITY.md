@@ -125,3 +125,14 @@ already downloaded update while offline. No IndexedDB store/schema changes or
 runtime dependencies are involved. Regression tests include an existing v41
 installation and a poisoned v42 cache, rather than only a fresh profile. Actual
 Safari 12 and physical iPhone 6/Home Screen upgrade behavior remain unverified.
+
+## Storage indicator
+
+Settings shows a serialized UTF-8 log-size estimate using the Safari-12-compatible
+Blob API, measuring records individually to limit temporary memory. It includes
+all saved settings and preserves imported metadata in the estimate. Optional
+`navigator.storage.estimate()` is feature-detected; Safari 12 and failed or invalid
+responses show **Available capacity unknown**. Browser totals include same-origin
+caches and other storage. Remaining capacity and additional-fill-up counts are
+estimates, excluding database overhead from average record size; they are not
+guaranteed writable space. No storage probe writes or new dependencies are used.

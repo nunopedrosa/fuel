@@ -38,14 +38,17 @@ jobs:
           node scripts/check-calc.js
           node scripts/check-migrate.js
           node scripts/check-providers.js
+          node scripts/check-i18n.js
           node scripts/check-sw-assets.js
+          node scripts/check-sw-update.js
+          node scripts/check-app-update.js
           node scripts/check-fuels.js
           node scripts/check-promos.js
           node scripts/check-receipt.js
       - name: Validate manifest JSON
         run: python3 -m json.tool manifest.webmanifest >/dev/null
-      - name: Only the station proxy may be PHP
-        run: test "$(find . -type f -name '*.php' -not -path './.git/*' | sort | tr '\n' ' ')" = "./api/stations.php "
+      - name: Only approved station proxy and test files may be PHP
+        run: test "$(find . -type f -name '*.php' -not -path './.git/*' | sort | tr '\n' ' ')" = "./api/stations-functions.php ./api/stations.php ./scripts/check-stations.php "
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '7.4'

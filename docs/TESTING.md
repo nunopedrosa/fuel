@@ -24,6 +24,7 @@ php scripts/check-stations.php
 | `check-calc.js` | `calcMetrics`, parsers (`flexDate`, `parseDelimited`, …) |
 | `check-migrate.js` | `migrateData` and schema settings |
 | `check-providers.js` | All EU adapters (fixtures), registry and proxy contract |
+| `check-storage.js` | UTF-8 log/metadata sizes, browser quota and remaining space, missing/failed/invalid estimates, empty logs and translations |
 | `check-i18n.js` | Language keys/placeholders, fallback, diagnostics, locale formatting, user text and canonical CSV stability |
 | `check-sw-assets.js` | Asset files, exact release query URLs and HTML/config/app/worker markers |
 | `check-sw-update.js` | Fresh precache, coherent navigation, update metadata, worker replies and rejected incomplete releases |

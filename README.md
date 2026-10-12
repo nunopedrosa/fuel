@@ -1582,3 +1582,14 @@ In particular, changes should preserve:
 FuelLog application source code and original FuelLog artwork are released under the **MIT License**. See [LICENSE](LICENSE).
 
 External provider data is not part of the repository and remains subject to each provider's terms and conditions.
+
+### Storage in Settings
+
+The Storage card shows the estimated size of your saved log (vehicles, fill-ups,
+promos and settings) and the number of saved fill-ups. When supported, it also
+shows estimated browser storage used, quota and available space, including offline
+caches and other data on the same site. Older Safari shows **Available capacity
+unknown**. The additional-fill-up estimate divides available space by your current
+average serialized fill-up size; an empty log has no record estimate. Record sizes,
+database overhead, device free space and cache growth affect actual capacity.
+These figures are estimates, not guaranteed space.

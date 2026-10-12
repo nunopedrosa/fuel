@@ -1,5 +1,17 @@
 // Português UI catalogue. Keep keys and placeholders aligned with the other languages.
 window.FuelLogI18n.register("pt",{"name": "Português", "locale": "pt-PT", "flag": "🇵🇹"},{
+  "storage.title": "Armazenamento",
+  "storage.checking": "A verificar armazenamento…",
+  "storage.log": "Dados do registo guardados (estimativa)",
+  "storage.count": "Abastecimentos guardados",
+  "storage.used": "Espaço usado pelo navegador (estimativa)",
+  "storage.available": "Espaço disponível (estimativa)",
+  "storage.quota": "Quota de armazenamento do navegador (estimativa)",
+  "storage.records": "Abastecimentos adicionais que poderão caber (estimativa)",
+  "storage.unknown": "Desconhecido",
+  "storage.capacity_unknown": "Capacidade disponível desconhecida",
+  "storage.add_record": "Adicione um abastecimento para estimar o tamanho do registo",
+  "storage.explanation": "O tamanho do registo estima os dados JSON em UTF-8 de veículos, abastecimentos, promoções e definições, sem o espaço adicional da base de dados. O uso do navegador inclui caches offline e outros dados deste site. Abastecimentos adicionais = espaço disponível ÷ tamanho médio de um abastecimento guardado. Os tamanhos dos registos, o espaço adicional da base de dados e as caches variam; a quota do navegador não garante espaço livre.",
   "nav.home": "Início",
   "nav.fillup": "Abastecer",
   "nav.history": "Histórico",
