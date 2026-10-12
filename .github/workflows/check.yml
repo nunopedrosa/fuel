@@ -38,6 +38,7 @@ jobs:
           node scripts/check-calc.js
           node scripts/check-migrate.js
           node scripts/check-providers.js
+          node scripts/check-storage.js
           node scripts/check-i18n.js
           node scripts/check-sw-assets.js
           node scripts/check-sw-update.js
