@@ -2,6 +2,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('path');
 let batch,dialogs=[],captured;
 const window={},context=vm.createContext({window,Date,Intl,URL,console,setTimeout,clearTimeout,navigator:{userAgent:''},document:{querySelector(){return null}},FuelDB:{async commitImport(b){batch=b}},FuelLogFuels:{LIST:[],guess(){return null},label(){return ''},present(){return ''}},FuelProviders:{},FuelLogPromos:{DEFAULT_FILL_LITRES:40}});
+require('./i18n-test-helper.cjs')(context);
 ['../js/data.js','../js/import/bplist.js','../js/import/jerrycan.js'].forEach(f=>vm.runInContext(fs.readFileSync(path.join(__dirname,f),'utf8'),context));context.FuelLogData=window.FuelLogData;context.FuelLogJerrycan=window.FuelLogJerrycan;
 vm.runInContext(fs.readFileSync(path.join(__dirname,'../app.js'),'utf8').replace(/init\(\)\.catch[\s\S]*$/,''),context);
 vm.runInContext('appDialog=async function(o){return this.dialogResults.shift()}; download=function(n,c){this.captured=c};toast=function(){};',context);context.dialogResults=[true];

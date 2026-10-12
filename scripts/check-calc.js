@@ -19,6 +19,7 @@ const context = vm.createContext({
   FuelLogFuels: { LIST: [], guess: function () { return null; }, label: function () { return ''; }, present: function () { return ''; } },
   FuelProviders: {}
 });
+require('./i18n-test-helper.cjs')(context);
 vm.runInContext(fs.readFileSync(path.join(__dirname, '../js/data.js'), 'utf8'), context);
 context.FuelLogData = window.FuelLogData;
 vm.runInContext(fs.readFileSync(path.join(__dirname, '../app.js'), 'utf8').replace(/init\(\)\.catch[\s\S]*$/, ''), context);

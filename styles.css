@@ -254,3 +254,18 @@ html.legacy-ios .content.prices-route #stationMap{min-height:180px}
 .fill-notes-heading{display:flex;align-items:center;justify-content:space-between}.fill-clear-notes{display:flex;align-items:center;justify-content:center;flex:0 0 44px;width:44px;height:44px;padding:0;border:0;background:transparent;color:var(--muted);cursor:pointer}.fill-clear-notes span{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border:1px solid currentColor;border-radius:50%;font-size:20px;line-height:1}.fill-clear-notes:focus{outline:2px solid var(--primary);outline-offset:1px}
 
 .startup-loading .startup-bar{display:block;border-radius:4px;background:rgba(255,255,255,.22)}.startup-loading .hero-card .startup-bar{background:rgba(255,255,255,.28)}.startup-loading .startup-bar-title{width:58%;max-width:200px;height:28px;margin-bottom:8px}.startup-loading .startup-bar-big{width:45%;max-width:140px;height:32px;margin-bottom:6px}.startup-loading .startup-line{height:14px;margin:0 0 8px;opacity:.5}.startup-loading .side-card .btn:disabled{opacity:.55;cursor:default}
+
+/* Language and symbol controls: native buttons, no flex-gap dependency. */
+.language-picker{position:relative;flex-shrink:0}
+.header-icon{display:flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:24px;cursor:pointer}
+.header-icon:focus,.language-choices button:focus{outline:2px solid var(--primary);outline-offset:2px}
+.language-choices{position:absolute;right:0;top:50px;min-width:180px;padding:6px;background:#fff;border:1px solid var(--line);border-radius:6px;box-shadow:var(--shadow);z-index:40}
+.language-choices button{display:block;width:100%;min-height:44px;text-align:left;padding:8px 12px;border:0;background:#fff;border-radius:4px;font:inherit;cursor:pointer}
+.language-choices button[aria-pressed="true"]{background:#e5f5f2;color:var(--primary);font-weight:600}
+.top-actions .fab{width:44px;height:44px}
+.ui-icon{display:block;flex-shrink:0}
+.symbol-button,.icon-btn,#fillFindStation,.price-filters .price-find-btn{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+.analysis-zoom button{min-width:44px;min-height:44px}
+.top-left{flex:1 1 auto}.top-actions{flex:0 0 auto}.brand{min-width:0}
+@media(max-width:600px){.topbar{padding-left:10px;padding-right:10px}.brand{padding:0;font-size:18px}.brand img{width:32px;height:32px}.top-actions{gap:0}.top-actions>*+*{margin-left:4px}.status-pill{max-width:76px;white-space:normal;text-align:center;padding:4px 6px;font-size:10px}#pageKicker{display:none}.bottom-nav .nav-item small{font-size:10px}.language-choices{min-width:175px}}
+@media(max-width:360px){.brand span{font-size:16px}.brand img{width:28px;height:28px}.status-pill{max-width:64px}#installBtn{font-size:11px;padding:5px}}

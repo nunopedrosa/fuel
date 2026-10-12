@@ -9,7 +9,7 @@ The development requirements live in [AGENTS.md](../AGENTS.md).
 
 FuelLog is a static PWA with no build step. Most UI and application logic lives
 in `app.js`. `index.html` shows a static Home placeholder in `#app`, registers the
-service worker immediately, then loads a small deferred script bundle (configuration,
+service worker immediately, then loads a small deferred script bundle (language registry/catalogues, inline icons, configuration,
 database, fuels, providers, promos, data, application). Map, country adapters,
 analysis, import and receipt OCR scripts load after first paint via
 `loadDeferredScripts` in `app.js`.
@@ -17,6 +17,7 @@ analysis, import and receipt OCR scripts load after first paint via
 | Area or task | Files | Useful entry points |
 | --- | --- | --- |
 | Startup, state and navigation | [app.js](../app.js), [index.html](../index.html) | `init`, `refresh`, `route`, `render`, `wireCommon` |
+| Interface languages and symbols | [js/i18n/](../js/i18n/), [js/ui-icons.js](../js/ui-icons.js), [app.js](../app.js), [index.html](../index.html) | `FuelLogI18n`, `tr`, `uiLocale`, `uiIcon`, `changeLanguage`, `updateLanguageUi`, `captureLanguageDraft`, `restoreLanguageDraft`; [I18N.md](I18N.md) |
 | Dashboard and history | [app.js](../app.js) | `dashboard`, `history`, `fillRow`, `analysisCard` |
 | Interactive history analysis | [js/analysis.js](../js/analysis.js), [js/analysis-ui.js](../js/analysis-ui.js) | `FuelLogAnalysis.prepare`, `select`, `monthly`, `sample`; `FuelLogAnalysisUI.render`, `mount`, `chart` |
 | Binary-plist decoding | [js/import/bplist.js](../js/import/bplist.js) | `FuelLogBplist.decode` |
@@ -51,6 +52,9 @@ source policies are documented in [PROVIDERS.md](PROVIDERS.md).
 - **Startup:** service worker registration (also inlined in `index.html`) → `init`
   → `FuelDB.open` → `refresh` → default vehicle when needed → `migrateData`
   → `render` (replaces placeholder) → `loadDeferredScripts` after first paint.
+- **Language:** `settings.language` → `FuelLogI18n.use` → header flag + translated
+  rendering/locale formatting. It is separate from `priceCountry`. Switching preserves
+  form drafts, imported urban precision, filters and station/reference results.
 - **Editing:** form → submit handler → `FuelDB.put` → `refresh` → rendering.
   Both save handlers preserve existing fields; unchanged fill-up dates retain
   seconds/milliseconds. The urban slider writes `cityPercentage` only when changed,
@@ -84,8 +88,8 @@ source policies are documented in [PROVIDERS.md](PROVIDERS.md).
   trace source flags in `js/import/jerrycan.js` and `source.original` when diagnosing
   a spike. See [ANALYSIS.md](ANALYSIS.md) for the calculation/diagnostic contract.
 - **Prices:** selected country/fuel → provider or optional proxy → normalized
-  prices → promo comparison → sorted station list and map markers. **Find** searches
-  at the map centre; **Find ◎** uses geolocation then searches there. Station cards
+  prices → promo comparison → sorted station list and map markers. the **magnifying glass** searches
+  at the map centre; the **location target** uses geolocation then searches there. Station cards
   show effective €/L, typical-fill total and saving vs the most expensive result
   in the current list (typical litres from Settings → Brand promos). List layout
   puts distance under the name and totals under the price; map popups show price,

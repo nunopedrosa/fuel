@@ -24,6 +24,7 @@ php scripts/check-stations.php
 | `check-calc.js` | `calcMetrics`, parsers (`flexDate`, `parseDelimited`, …) |
 | `check-migrate.js` | `migrateData` and schema settings |
 | `check-providers.js` | All EU adapters (fixtures), registry and proxy contract |
+| `check-i18n.js` | Language keys/placeholders, fallback, diagnostics, locale formatting, user text and canonical CSV stability |
 | `check-sw-assets.js` | `sw.js` ASSETS vs disk and `index.html` scripts |
 | `check-fuels.js` | Fuel catalogue matching, Portuguese commercial names and additive/simple distinctions |
 | `check-promos.js` | Promo stacking rules |
@@ -82,3 +83,12 @@ should expose conflicting timestamps/odometers without correcting records. Prese
 source metadata when the user explicitly changes Full/Partial. Use synthetic
 fixtures for public regressions; keep personal backups and identifying diagnostic
 examples out of the repository.
+
+## Optional language browser check
+
+With the local server and Playwright available, run `node scripts/browser-i18n.cjs`.
+The `FUELLOG_QA_URL`, `FUELLOG_QA_PLAYWRIGHT` and `FUELLOG_QA_CHROMIUM` overrides
+apply. This uses synthetic local data and checks the header selector at 375/320px,
+independence from station country, form/metadata preservation, History filters,
+reference-price cards, translated chart tabs and offline reload/switching. It does
+not establish Safari 12 or physical iPhone 6/Home Screen compatibility.

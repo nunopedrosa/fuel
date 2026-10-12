@@ -19,6 +19,7 @@ const context = vm.createContext({
   FuelLogFuels: { LIST: [], guess: function () { return null; }, label: function () { return ''; }, present: function () { return ''; } },
   FuelProviders: {}
 });
+require('./i18n-test-helper.cjs')(context);
 vm.runInContext(fs.readFileSync(path.join(__dirname, '../js/data.js'), 'utf8'), context);
 context.FuelLogData = context.window.FuelLogData;
 vm.runInContext(fs.readFileSync(path.join(__dirname, '../app.js'), 'utf8').replace(/init\(\)\.catch[\s\S]*$/, ''), context);
@@ -37,11 +38,13 @@ const run = function (code) { return vm.runInContext(code, context); };
     id: 'same', vehicleId: 'car', date: '2026-01-01T00:00:00.000Z', odometer: 1, litres: 2,
     totalCost: 4, currency: 'EUR', fullTank: true, fuelId: 'PETROL_95_ADDITIVATED', receiptFuelType: 'PRIO TOP 95'
   };
-  await run('state.vehicles=[{id:"car",name:"Car",currency:"EUR"}];state.fillups=[' + JSON.stringify(existing) + '];state.settings={activeVehicle:"car"};state.promos=[]');
+  await run('state.vehicles=[{id:"car",name:"Car",currency:"EUR"}];state.fillups=[' + JSON.stringify(existing) + '];state.settings={activeVehicle:"car",language:"pt",priceCountry:"ES"};state.promos=[]');
   batch = null;
   context.dialogResults = [true];
   await run('importFuelLogBackup({format:"FuelLog",version:4,vehicles:[{id:"car",name:"Car",currency:"EUR"}],fillups:[' + JSON.stringify(existing) + ']},false)');
   assert.equal(batch.fillups.length, 0, 'identical fill-up on merge must be skipped');
+  assert.equal(run('state.settings.language'),'pt','merge keeps local language');
+  assert.equal(run('state.settings.priceCountry'),'ES','merge keeps search country');
   context.dialogResults = [true];
   await run('importFuelLogBackup(' + JSON.stringify({format: 'FuelLog', version: 4, vehicles: [{id: 'car', name: 'Car', currency: 'EUR'}], fillups: [existing]}) + ',true)');
   assert.equal(batch.fillups[0].receiptFuelType, 'PRIO TOP 95', 'JSON restore preserves original receipt fuel description');
@@ -56,8 +59,10 @@ const run = function (code) { return vm.runInContext(code, context); };
   await run('state.promos=[{id:"old",brand:"X",type:"litre",amount:0.01,active:true}];state.fillups=[];state.vehicles=[{id:"v",name:"V"}];state.settings={activeVehicle:"v"}');
   batch = null;
   context.dialogResults = [true];
-  await run('importFuelLogBackup({format:"FuelLog",version:4,vehicles:[{id:"v",name:"V"}],fillups:[],promos:[{id:"p1",brand:"Galp",type:"litre",amount:0.03,active:true}],settings:[{key:"activeVehicle",value:"v"}]},true)');
+  await run('importFuelLogBackup({format:"FuelLog",version:4,vehicles:[{id:"v",name:"V"}],fillups:[],promos:[{id:"p1",brand:"Galp",type:"litre",amount:0.03,active:true}],settings:[{key:"activeVehicle",value:"v"},{key:"language",value:"pt"},{key:"priceCountry",value:"ES"}]},true)');
   assert.equal(batch.replace, true);
+  assert.equal(batch.settings.find(s=>s.key==='language').value,'pt','replace restores backed-up language');
+  assert.equal(batch.settings.find(s=>s.key==='priceCountry').value,'ES','replace restores independent search country');
   assert.equal(batch.promos.length, 1);
   assert.equal(batch.promos[0].id, 'p1', 'replace must restore backup promos');
 

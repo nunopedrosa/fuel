@@ -79,14 +79,14 @@ window.FuelProviders = (function () {
     var t = new Date(iso).getTime();
     if (!isFinite(t)) return '';
     var s = Math.max(0, (Date.now() - t) / 1000);
-    if (s < 90) return 'just now';
+    if (s < 90) return window.FuelLogI18n?window.FuelLogI18n.t('ui.just_now'):'just now';
     var m = s / 60;
-    if (m < 90) return Math.round(m) + ' min ago';
+    if (m < 90) return window.FuelLogI18n?window.FuelLogI18n.t('ui.count_min_ago',{count:Math.round(m)}):Math.round(m)+' min ago';
     var h = m / 60;
-    if (h < 48) return Math.round(h) + ' h ago';
+    if (h < 48) return window.FuelLogI18n?window.FuelLogI18n.t('ui.count_h_ago',{count:Math.round(h)}):Math.round(h)+' h ago';
     var d = h / 24;
-    if (d <= 30) return Math.round(d) + ' days ago';
-    return new Date(iso).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+    if (d <= 30) return window.FuelLogI18n?window.FuelLogI18n.t('ui.count_days_ago',{count:Math.round(d)}):Math.round(d)+' days ago';
+    return new Date(iso).toLocaleDateString(window.FuelLogI18n?window.FuelLogI18n.locale():undefined, { day: '2-digit', month: 'short', year: 'numeric' });
   }
   function norm(text) {
     var s = String(text == null ? '' : text).toLowerCase().replace(/\s+/g, ' ').trim();

@@ -1,9 +1,13 @@
-const CACHE = 'fuellog-v41-deferred-startup';
+const CACHE = 'fuellog-v42-languages';
 const ASSETS = [
   './',
   'index.html',
-  'styles.css?v=47',
+  'styles.css?v=48',
   'config.js',
+  'js/i18n/i18n.js',
+  'js/i18n/en.js',
+  'js/i18n/pt.js',
+  'js/ui-icons.js',
   'db.js',
   'js/data.js',
   'js/import/bplist.js',

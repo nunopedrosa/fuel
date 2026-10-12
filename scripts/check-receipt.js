@@ -63,6 +63,7 @@ assert.equal(attachedUnit.amountsMatch, false, 'a discounted total must prompt r
 assert.equal(R.parse('POSTO X\nPreco/L 1,60€/L').litres, null, 'a unit-price marker is not a purchased quantity');
 async function checkStationPrices() {
   var context = vm.createContext({ window: {}, Date: Date, Intl: Intl, console: console, navigator: { userAgent: '' }, document: { querySelector: function () { return null; } }, FuelLogPromos: { DEFAULT_FILL_LITRES: 40 } });
+require('./i18n-test-helper.cjs')(context);
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../app.js'), 'utf8').replace(/init\(\)\.catch[\s\S]*$/, ''), context);
   vm.runInContext("state.priceCountry = 'PT'", context);
   var prompts = [], answer = false;

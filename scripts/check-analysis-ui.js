@@ -1,6 +1,7 @@
 'use strict';
 const fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('path');
 const context=vm.createContext({window:{},Date,Intl,console});
+require('./i18n-test-helper.cjs')(context);
 ['data.js','analysis.js'].forEach(f=>vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/'+f),'utf8'),context));context.FuelLogData=context.window.FuelLogData;context.FuelLogAnalysis=context.window.FuelLogAnalysis;
 const file=path.join(__dirname,'../js/analysis-ui.js');assert.ok(fs.existsSync(file),'explorer must offer linked period controls and inspection');
 vm.runInContext(fs.readFileSync(file,'utf8'),context);const U=context.window.FuelLogAnalysisUI,A=context.FuelLogAnalysis;

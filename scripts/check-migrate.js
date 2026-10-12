@@ -59,6 +59,7 @@ const context = vm.createContext({
   FuelDB: createFuelDb(stores),
   indexedDB: { open: function () { throw new Error('unexpected indexedDB'); } }
 });
+require('./i18n-test-helper.cjs')(context);
 vm.runInContext(fs.readFileSync(path.join(__dirname, '../js/data.js'), 'utf8'), context);
 vm.runInContext(fs.readFileSync(path.join(__dirname, '../js/prices/providers.js'), 'utf8'), context);
 vm.runInContext(fs.readFileSync(path.join(__dirname, '../js/prices/fuels.js'), 'utf8'), context);

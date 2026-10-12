@@ -13,7 +13,7 @@
       var script = document.createElement('script');
       script.src = SCRIPT_PATH;
       script.onload = function () { resolve(root.Tesseract); };
-      script.onerror = function () { reject(new Error('Could not load the local OCR engine.'));
+      script.onerror = function () { reject(new Error(tr("ui.could_not_load_the_local_ocr_engine")));
       };
       document.head.appendChild(script);
     });
@@ -22,10 +22,10 @@
   function readAndDownscale(file) {
     return new Promise(function (resolve, reject) {
       var reader = new FileReader();
-      reader.onerror = function () { reject(new Error('Could not read this photo.')); };
+      reader.onerror = function () { reject(new Error(tr("ui.could_not_read_this_photo"))); };
       reader.onload = function () {
         var image = new Image();
-        image.onerror = function () { reject(new Error('This image could not be opened.')); };
+        image.onerror = function () { reject(new Error(tr("ui.this_image_could_not_be_opened"))); };
         image.onload = function () {
           var maxSide = 1280;
           var scale = Math.min(1, maxSide / Math.max(image.width, image.height));
@@ -33,7 +33,7 @@
           canvas.width = Math.max(1, Math.round(image.width * scale));
           canvas.height = Math.max(1, Math.round(image.height * scale));
           var context = canvas.getContext('2d');
-          if (!context) { reject(new Error('Image processing is unavailable in this browser.')); return; }
+          if (!context) { reject(new Error(tr("ui.image_processing_is_unavailable_in_this_browser"))); return; }
           context.drawImage(image, 0, 0, canvas.width, canvas.height);
           try {
             var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
@@ -46,7 +46,7 @@
             context.putImageData(pixels, 0, 0);
             resolve(canvas.toDataURL('image/jpeg', 0.86));
           } catch (error) {
-            reject(new Error('Image cleanup failed. Try a smaller or clearer photo.'));
+            reject(new Error(tr("ui.image_cleanup_failed_try_a_smaller_or")));
           } finally {
             canvas.width = 1;
             canvas.height = 1;
@@ -60,9 +60,9 @@
   }
 
   function scan(file, onProgress) {
-    if (!file || !file.type || file.type.indexOf('image/') !== 0) return Promise.reject(new Error('Choose an image file.'));
-    if (file.size > 8 * 1024 * 1024) return Promise.reject(new Error('Choose a receipt photo smaller than 8 MB.'));
-    if (workerPromise) return Promise.reject(new Error('A receipt scan is already running.'));
+    if (!file || !file.type || file.type.indexOf('image/') !== 0) return Promise.reject(new Error(tr("ui.choose_an_image_file")));
+    if (file.size > 8 * 1024 * 1024) return Promise.reject(new Error(tr("ui.choose_a_receipt_photo_smaller_than_8")));
+    if (workerPromise) return Promise.reject(new Error(tr("ui.a_receipt_scan_is_already_running")));
     var worker;
     workerPromise = loadEngine().then(function (engine) {
       return engine.createWorker('por', 1, {

@@ -100,3 +100,16 @@ on narrow phones. New decoder/data modules are included in the offline app shell
 Source-unit and fuel confirmation avoids assuming undocumented Jerrycan enums.
 Static checks and modern-browser tests do not establish physical iPhone 6 support;
 actual Safari 12 and Home Screen testing must be reported separately.
+
+## Language selection and symbol controls
+
+English and European Portuguese use small local JavaScript catalogues in
+`js/i18n/`, cached with the app shell. Translation lookup and interpolation need
+no runtime dependency or new browser API. `Intl` uses explicit `en-GB`/`pt-PT`
+locales for displayed dates/numbers; date entry keeps its documented format.
+The header flag opens native language buttons, supports keyboard dismissal, and
+retains 44 px targets at 320/375 px widths. Search, edit and expand controls use
+inline SVG with translated names; consequential actions keep text. Language
+switching preserves unsaved forms and imported numeric precision.
+Chromium checks cover narrow touch layouts and offline persistence. Safari 12,
+a physical iPhone 6 and installed Home Screen behavior remain unverified.

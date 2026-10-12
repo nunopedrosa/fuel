@@ -11,7 +11,8 @@ const base = process.env.FUELLOG_QA_URL || 'http://127.0.0.1:8765';
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(base);
-    await page.waitForFunction(() => state.vehicles.length > 0);
+    await page.waitForFunction(() => state.vehicles.length > 0 && navigator.serviceWorker.controller && !document.querySelector('#app').classList.contains('startup-loading'));
+    await page.evaluate(() => loadDeferredScripts());
     assert.equal(await page.locator('[data-receipt-camera]').count(), 1);
     assert.equal(await page.locator('[data-receipt-library]').count(), 1);
     await page.evaluate(() => {

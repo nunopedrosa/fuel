@@ -1,6 +1,7 @@
 'use strict';
 const fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('path');
 const context=vm.createContext({window:{},Date,Intl,console,navigator:{userAgent:''},document:{querySelector(){return null}},FuelLogFuels:{LIST:[],guess(){return null}},FuelLogPromos:{DEFAULT_FILL_LITRES:40}});
+require('./i18n-test-helper.cjs')(context);
 vm.runInContext(fs.readFileSync(path.join(__dirname,'../app.js'),'utf8').replace(/init\(\)\.catch[\s\S]*$/,''),context);
 const run=s=>vm.runInContext(s,context);
 const html=run('fillForm()');
@@ -11,7 +12,7 @@ function form(original){
  const range={value:original==null?'50':String(Math.round(original*100)),disabled:false,getAttribute(){return original==null?'':String(original)},setAttribute(k,v){this[k]=v}};
  const missing={checked:original==null},output={textContent:''};
  const controls={'#fillUrban':range,'#fillUrbanMissing':missing,'#fillUrbanValue':output};
- context.form={querySelector(s){return controls[s]}};
+ context.form={attributes:{},getAttribute(k){return this.attributes[k]||null},setAttribute(k,v){this.attributes[k]=v},querySelector(s){return controls[s]}};
  const apply=run('wireUrbanProfile(form)');
  return {range,missing,output,apply};
 }

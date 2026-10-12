@@ -12,7 +12,7 @@
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
   <link rel="preload" href="fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="styles.css?v=47" />
+  <link rel="stylesheet" href="styles.css?v=48" />
   <title>FuelLog</title>
 </head>
 <body>
@@ -24,7 +24,7 @@
   <div class="app-shell">
     <header class="topbar">
       <div class="top-left">
-        <button class="brand" data-route="dashboard" aria-label="FuelLog dashboard">
+        <button class="brand" data-route="dashboard" data-i18n-aria-label="ui.fuellog_dashboard" aria-label="FuelLog dashboard">
           <img src="icons/icon.svg" alt="" />
           <span>FuelLog</span>
         </button>
@@ -32,8 +32,12 @@
       </div>
       <div class="top-actions">
         <span id="offlineBadge" class="status-pill">Offline ready</span>
-        <button id="installBtn" class="btn ghost hidden">Install</button>
-        <a id="suggestBtn" class="fab hidden" href="mailto:nuno.f.pedrosa@gmail.com" aria-label="Email a suggestion" title="Suggest">✉</a>
+        <button data-i18n="ui.install" id="installBtn" class="btn ghost hidden">Install</button>
+        <div class="language-picker">
+          <button type="button" id="languageButton" class="header-icon" aria-label="Language: English" title="Language: English" aria-expanded="false" aria-controls="languageChoices"><span aria-hidden="true">🇬🇧</span></button>
+          <div id="languageChoices" class="language-choices hidden" role="group" aria-label="Choose language"></div>
+        </div>
+        <a id="suggestBtn" class="fab hidden" href="mailto:nuno.f.pedrosa@gmail.com" data-i18n-aria-label="ui.email_a_suggestion" data-i18n-title="ui.suggest" aria-label="Email a suggestion" title="Suggest">✉</a>
       </div>
     </header>
 
@@ -65,12 +69,12 @@
       </div>
     </main>
 
-    <nav class="bottom-nav" aria-label="Primary navigation">
-      <button data-route="dashboard" class="nav-item active"><span>⌂</span><small>Home</small></button>
-      <button data-route="add" class="nav-item"><span>＋</span><small>Fill-up</small></button>
-      <button data-route="history" class="nav-item"><span>≡</span><small>History</small></button>
-      <button data-route="prices" class="nav-item"><span>€</span><small>Prices</small></button>
-      <button data-route="settings" class="nav-item"><span>⚙</span><small>Settings</small></button>
+    <nav class="bottom-nav" data-i18n-aria-label="ui.primary_navigation" aria-label="Primary navigation">
+      <button data-route="dashboard" class="nav-item active"><span>⌂</span><small data-i18n="nav.home">Home</small></button>
+      <button data-route="add" class="nav-item"><span>＋</span><small data-i18n="nav.fillup">Fill-up</small></button>
+      <button data-route="history" class="nav-item"><span>≡</span><small data-i18n="nav.history">History</small></button>
+      <button data-route="prices" class="nav-item"><span>€</span><small data-i18n="nav.prices">Prices</small></button>
+      <button data-route="settings" class="nav-item"><span>⚙</span><small data-i18n="nav.settings">Settings</small></button>
     </nav>
   </div>
   <div id="modalRoot" class="modal-root hidden" aria-hidden="true">
@@ -85,6 +89,10 @@
     </div>
   </div>
   <div id="toast" class="toast" role="status"></div>
+  <script defer src="js/i18n/i18n.js"></script>
+  <script defer src="js/i18n/en.js"></script>
+  <script defer src="js/i18n/pt.js"></script>
+  <script defer src="js/ui-icons.js"></script>
   <script defer src="config.js"></script>
   <script defer src="db.js"></script>
   <script defer src="js/prices/fuels.js"></script>

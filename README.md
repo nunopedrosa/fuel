@@ -18,6 +18,7 @@ Fuel-station prices for Portugal, Spain and France, plus official reference pric
 - [Installation](#installation)
 - [Quick start](#quick-start)
 - [Using FuelLog](#using-fuellog)
+- [Interface language](#interface-language)
 - [Consumption and cost calculations](#consumption-and-cost-calculations)
 - [Backup and export](#backup-and-export)
 - [Importing existing fuel records](#importing-existing-fuel-records)
@@ -102,7 +103,7 @@ For the selected vehicle FuelLog displays:
 - user-defined brand promos: per-litre or per-fill discounts, cumulative or exclusive, that show an effective price on matching stations and re-sort results by that price
 - typical-fill **total cost** and **saving** versus the most expensive station in the current results (uses *Typical fill* from Brand promos)
 - colour-coded station rows and map markers (cheapest, within about €0.01/L, within about €0.05/L, higher)
-- **Find** searches at the map centre; **Find ◎** uses your location (same ◎ control as on the map)
+- **magnifying glass** searches at the map centre; **location target** uses your location (searches near you)
 - optional device geolocation and radius filtering
 - sorting by effective price and then distance
 - full-screen map with a bottom sheet for filters and results; opening the list recentres markers in the visible map area above the sheet
@@ -255,6 +256,19 @@ Chrome, Edge and other PWA-capable browsers can install FuelLog as a desktop web
 
 ---
 
+# Interface language
+
+Use the flag in the top-right corner, next to feedback, to choose **English** or
+**Português (Portugal)**. The language choice is saved locally and works offline.
+It changes interface text and date/number presentation independently of the
+country flag used for station searches. Your records, currency and units stay the
+same. The language button remains visible when feedback is hidden.
+
+Search uses a magnifying glass; search at your location uses a target symbol.
+Symbol buttons have translated accessibility labels. Save, Delete, import/export
+and other consequential actions retain text. Translations are kept together in
+[`js/i18n/`](js/i18n/); see [the language guide](docs/I18N.md) to add another language.
+
 # Using FuelLog
 
 ## Vehicles
@@ -293,8 +307,8 @@ Starting a fill-up from a station card uses the winning package only. A per-litr
 
 Open **Prices** from the bottom navigation. Choose country and fuel, set a search radius, then:
 
-- **Find** — search stations around the **map centre** (pan the map first if needed).
-- **Find ◎** — ask for your location, centre the map there, then run the same search (the ◎ symbol matches the locate control on the map).
+- **magnifying glass** — search stations around the **map centre** (pan the map first if needed).
+- **location target** — ask for your location, centre the map there, then run the same search (the map also has a separate ◎ locate control).
 
 Results appear in a bottom sheet. Drag the handle or tap it to switch between a peek strip (filters only) and a half-height list. Station cards show the name, distance under the name, effective €/L on the right, then the typical-fill total and saving (for example `€68.80 · Save €2.50`) under the price. **Go** opens directions; **Add fill-up** prefills the fill-up form from that station.
 
@@ -338,9 +352,9 @@ provenance. JSON backups preserve both fields; CSV preserves only the fraction.
 On Home, use **Scan** to take a receipt photo or **Photos** to choose an existing
 image. FuelLog reads the image on the device and suggests the date,
 fuel type, litres, unit price and total. The station is not read from the receipt;
-enter it manually or use **Find** on the fill-up form. Review and correct those values before
+enter it manually or use **magnifying glass** on the fill-up form. Review and correct those values before
 they are placed in the normal fill-up form. Odometer and tank fullness still
-need your confirmation. **Find** keeps an identical price per litre without a
+need your confirmation. **magnifying glass** keeps an identical price per litre without a
 prompt. If the station price differs from an existing fill-up price, choose
 **Keep current price** to preserve the price and total, or **Replace price** to
 use the station price and recalculate the total. An empty price is filled
