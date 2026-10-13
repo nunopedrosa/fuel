@@ -1,4 +1,4 @@
-const APP_BUILD_ID = 'fuellog-v45-device-language';
+const APP_BUILD_ID = 'fuellog-v46-iphone14-splash';
 const $=(s,r=document)=>r.querySelector(s);const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
 const uid=()=>((window.crypto&&typeof window.crypto.randomUUID==='function')?window.crypto.randomUUID():`id-${Date.now()}-${Math.random().toString(16).slice(2)}`);
 const euro=n=>new Intl.NumberFormat(uiLocale(),{style:'currency',currency:'EUR'}).format(Number(n||0));

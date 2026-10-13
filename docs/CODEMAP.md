@@ -53,7 +53,8 @@ source policies are documented in [PROVIDERS.md](PROVIDERS.md).
 - **Updates:** fresh complete precache → verify HTML/config/app release markers →
   activate → one controller-change reload. Navigation and assets come from the
   same installed cache; `sw.js` checks bypass it. See [UPDATES.md](UPDATES.md).
-- **Startup:** service worker registration (also inlined in `index.html`) → `init`
+- **Startup:** service worker registration (also inlined in `index.html`); iOS Home Screen launch
+  image `assets/FuelLogiPhone14pro.png` (1179×2556, iPhone 14/15/16 Pro class) → `init`
   → `FuelDB.open` → `refresh` → default vehicle when needed → `migrateData`
   → `render` (replaces placeholder) → `loadDeferredScripts` after first paint.
 - **Language:** saved `settings.language`, otherwise supported device preferences
