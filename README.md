@@ -1064,7 +1064,8 @@ The Prices page uses a full-screen map with a bottom sheet for filters and resul
 
 - **Bundled low-zoom tiles** (`assets/map-tiles/`) ship with the repository. Only their manifest is precached at installation; individual PNGs enter the service-worker cache when requested. Offline coverage therefore depends on areas previously viewed online, not just installation.
 - **IndexedDB `mapTiles`** stores tiles fetched while online, per chosen map style (oldest-write eviction, ~32 MB cap). On the Prices map, a control lets you pick the online provider (default OpenTopoMap; optional OpenStreetMap street maps). Offline mode uses bundled terrain tiles plus cache. Avoid `tile.openstreetmap.org` for bulk/automated traffic; the optional osm.org style is user-initiated only.
-- **`searchArchive:*` entries** in `priceCache` keep the last station searches (up to 20 snapshots, 7-day TTL, 500 stations each) plus `settings.lastPriceSearch` for reopening the Prices page offline.
+- **`searchArchive:*` entries** in `priceCache` keep the last station searches (up to 24 snapshots, 7-day TTL, 2000 stations each) plus `settings.lastPriceSearch` for reopening the Prices page offline.
+- **`priceArea:*` entries** bundle cached station results per map area so switching fuel (or searching again at the same centre) can reuse local data without another provider request when still fresh.
 
 Regenerate bundled tiles after changing coverage:
 

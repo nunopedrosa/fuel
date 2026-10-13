@@ -50,6 +50,12 @@ var F = window.FuelLogFuels;
   ['Gasolina Evologic 1,95€/L', null]
 ].forEach(function (row) { assert.equal(F.guess(row[0]), row[1], row[0]); });
 assert.equal(F.related('PETROL_95_ADDITIVATED')[0], 'PETROL_95');
+assert.equal(F.familyOf('DIESEL_B7'), 'diesel');
+assert.equal(F.familyOf('LPG'), 'lpg');
+assert.deepEqual(F.compatibleIds('DIESEL_B7'), ['DIESEL_B7', 'DIESEL_B10', 'DIESEL_PREMIUM', 'ADBLUE']);
+assert.equal(F.allowsCanonical('DIESEL_B7', 'PETROL_95', true), false);
+assert.equal(F.allowsCanonical('DIESEL_B7', 'DIESEL_B10', true), true);
+assert.equal(F.allowsCanonical('DIESEL_B7', 'PETROL_95', false), true);
 assert.equal(typeof F.present, 'function', 'present missing');
 assert.equal(typeof F.optionLabels, 'function', 'optionLabels missing');
 

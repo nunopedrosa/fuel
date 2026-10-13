@@ -110,8 +110,9 @@ source policies are documented in [PROVIDERS.md](PROVIDERS.md).
   total and saving on one right-aligned line. Opening results expands the bottom
   sheet to half; `refitMapToResults` fits markers in the visible map area (sheet
   overlap via layout measurement). `userStationPrices` reads local fill-ups as a
-  separate historical price source. Provider caches and search archives allow reuse
-  of previous results offline.
+  separate historical price source.   Provider caches, `priceArea:*` multi-fuel bundles and search archives allow
+  reuse of previous results offline (including switching fuel at the same map
+  centre without a new request when cached).
 - **Backups:** in-memory records → `exportJson` or `exportCsv` → `download` with
   the legacy-iOS fallback. JSON exports whole records; CSV lists fields explicitly.
 

@@ -16,6 +16,14 @@ window.FuelLogFuels = (function () {
     { id: 'E85', label: 'E85' },
     { id: 'ADBLUE', label: 'AdBlue' }
   ];
+  var FAMILY = {
+    diesel: ['DIESEL_B7', 'DIESEL_B10', 'DIESEL_PREMIUM', 'ADBLUE'],
+    petrol: ['PETROL_95', 'PETROL_95_ADDITIVATED', 'PETROL_95_E5', 'PETROL_95_E10', 'PETROL_98', 'PETROL_98_ADDITIVATED'],
+    lpg: ['LPG'],
+    cng: ['CNG'],
+    lng: ['LNG'],
+    e85: ['E85']
+  };
   var RELATED = {
     PETROL_95: ['PETROL_95_E10', 'PETROL_95_E5'],
     PETROL_95_ADDITIVATED: ['PETROL_95', 'PETROL_95_E5', 'PETROL_95_E10'],
@@ -68,6 +76,32 @@ window.FuelLogFuels = (function () {
   function related(id) {
     return RELATED[id] || [];
   }
+  function familyOf(id) {
+    var fam;
+    if (!id) return null;
+    for (fam in FAMILY) {
+      for (var i = 0; i < FAMILY[fam].length; i++) if (FAMILY[fam][i] === id) return fam;
+    }
+    return null;
+  }
+  function compatibleIds(preferredId) {
+    var fam = familyOf(preferredId);
+    if (!fam) return null;
+    return FAMILY[fam] ? FAMILY[fam].slice() : null;
+  }
+  function allowsCanonical(preferredId, canonId, limitOn) {
+    if (!limitOn || !preferredId || !canonId) return true;
+    var allowed = compatibleIds(preferredId);
+    if (!allowed) return true;
+    var map = {};
+    var i;
+    for (i = 0; i < allowed.length; i++) map[allowed[i]] = 1;
+    for (i = 0; i < allowed.length; i++) {
+      var rel = related(allowed[i]);
+      for (var j = 0; j < rel.length; j++) map[rel[j]] = 1;
+    }
+    return !!map[canonId];
+  }
   function norm(text) {
     var s = FuelProviders && FuelProviders.norm ? FuelProviders.norm(text) : String(text == null ? '' : text).toLowerCase();
     return s.replace(/ev[o0]\s*l[o0]g[i1]c/g, 'evologic').replace(/\b(evologic|ultimate|active|efitec|top|optima)(95|98)\b/g, '$1 $2');
@@ -99,5 +133,5 @@ window.FuelLogFuels = (function () {
     if (/gasolina|essence|benzine|benzina|petrol|gasoline|mogas/.test(t)) return null;
     return null;
   }
-  return { LIST: LIST, label: label, related: related, guess: guess, present: present, optionLabels: optionLabels };
+  return { LIST: LIST, label: label, related: related, familyOf: familyOf, compatibleIds: compatibleIds, allowsCanonical: allowsCanonical, guess: guess, present: present, optionLabels: optionLabels };
 })();
