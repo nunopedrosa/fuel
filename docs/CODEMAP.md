@@ -18,12 +18,12 @@ analysis, import and receipt OCR scripts load after first paint via
 | --- | --- | --- |
 | Startup, state and navigation | [app.js](../app.js), [index.html](../index.html) | `init`, `refresh`, `route`, `render`, `wireCommon` |
 | Interface languages and symbols | [js/i18n/](../js/i18n/), [js/ui-icons.js](../js/ui-icons.js), [app.js](../app.js), [index.html](../index.html) | `FuelLogI18n.resolve`, `FuelLogI18n.use`, `tr`, `uiLocale`, `uiIcon`, `changeLanguage`, `updateLanguageUi`, `captureLanguageDraft`, `restoreLanguageDraft`; [I18N.md](I18N.md) |
-| Dashboard and history | [app.js](../app.js) | `dashboard`, `history`, `fillRow`, `fillRowDistanceCell`, `fillIntervalEndMap`, `calcRecentMetrics`, `vehicleCardMetricsHtml`, `analysisCard` |
+| Dashboard and history | [app.js](../app.js) | `dashboard` (hero: `vehicleLastOdometerKm`, `calcRecentMetrics` / `RECENT_METRICS_FILLS`; recent list: last five fills, newest first), `history`, `fillRow`, `fillRowDistanceCell`, `fillIntervalEndMap`, `intervalPurchasesCost`, `vehicleCardMetricsHtml`, `analysisCard` |
 | Interactive history analysis | [js/analysis.js](../js/analysis.js), [js/analysis-ui.js](../js/analysis-ui.js) | `FuelLogAnalysis.prepare`, `select`, `monthly`, `sample`; `FuelLogAnalysisUI.render`, `mount`, `chart` |
 | Binary-plist decoding | [js/import/bplist.js](../js/import/bplist.js) | `FuelLogBplist.decode` |
 | Jerrycan normalization | [js/import/jerrycan.js](../js/import/jerrycan.js), [app.js](../app.js) | `FuelLogJerrycan.inspect`, `normalize`, `importJerrycan`, `prepareJerrycanBatch` |
 | Shared data semantics | [js/data.js](../js/data.js) | `FuelLogData.intervals`, `currency`, `sourceKey`, `amountsByCurrency` |
-| Consumption and cost calculations | [app.js](../app.js) | `vehicleFillups`, `calcMetrics`, `consumptionSeries`, `priceSeries` |
+| Consumption and cost calculations | [app.js](../app.js) | `vehicleFillups`, `metricsFromFillups`, `calcMetrics` (full history), `calcRecentMetrics` (optional tail window), `consumptionSeries`, `priceSeries` |
 | Fill-up and vehicle editing | [app.js](../app.js) | `fillForm`, `decimalInputText`, `applyDecimalInput`, `wireDecimalInputs`, `urbanProfileField`, `wireUrbanProfile`, fill-up submit handler in `wireCommon`, `vehicleDialog`, `wireVehicleForm`, `findStationForFill`, `pickStationForFill` |
 | Receipt scanning and OCR parsing | [js/receipt.js](../js/receipt.js), [js/receipt-ocr.js](../js/receipt-ocr.js), [app.js](../app.js) | `FuelLogReceipt.parse`, `FuelLogReceiptOCR.scan`, receipt review and existing fill-up form |
 | Import parsing and validation | [app.js](../app.js) | `importData`, `readFileBuffer`, `readFileText`, `extractRowsFromJson`, `parseDelimited`, `guessDelimiter`, `flexDate`, `flexNum`, `flexBool`, `rowValue` |
@@ -42,7 +42,7 @@ analysis, import and receipt OCR scripts load after first paint via
 | Offline maps and search history | [js/prices/offline-tiles.js](../js/prices/offline-tiles.js), [db.js](../db.js), [app.js](../app.js) | `FuelLogOfflineTiles`, `putMapTile`, `getMapTile`, `evictMapTiles`, `archivePriceSearch`, `restorePriceSearchFromArchive` |
 | App shell, updates and installation | [sw.js](../sw.js), [config.js](../config.js), [manifest.webmanifest](../manifest.webmanifest), [index.html](../index.html) | `CACHE` (matches HTML/config/`APP_BUILD_ID`), versioned `ASSETS`, `verifyShellRelease`, `SKIP_WAITING`/`GET_VERSION` message handlers; `registerFuelServiceWorker` and install prompt in `init` |
 | Styling and old-Safari behaviour | [styles.css](../styles.css), [COMPATIBILITY.md](../COMPATIBILITY.md) | Layout fallbacks and shared 16 px `.field` editing controls; `FuelProviders.legacyIOS`, `download`, regional search paths |
-| Checks | [.github/workflows/check.yml](../.github/workflows/check.yml), [docs/TESTING.md](TESTING.md), [scripts/check-*.js](../scripts/) | Syntax/iOS-12 scan, manifest/PHP proxy; Node/PHP regression scripts (see TESTING.md) |
+| Checks | [.github/workflows/check.yml](../.github/workflows/check.yml), [docs/TESTING.md](TESTING.md), [scripts/check-*.js](../scripts/) | Syntax/iOS-12 scan, manifest/PHP proxy; Node/PHP regression scripts including `check-decimal-input.js`, `check-calc.js` (recent metrics, hero mileage); see TESTING.md |
 
 Country adapters are in `js/prices/providers/`: `pt-dgeg.js`, `es-minetur.js`,
 `fr-government.js`, `be-fps.js` and `nl-cbs.js`. Their contract, provenance and
@@ -93,14 +93,22 @@ source policies are documented in [PROVIDERS.md](PROVIDERS.md).
   vehicle + `FuelLogData.sourceKey` (date, odometer, litres, currency, total cost);
   native backups preserve distinct local IDs and remap conflicts on merge.
 - **Calculations:** `vehicleFillups` → shared `FuelLogData.intervals` →
-  `calcMetrics` summaries and `consumptionSeries` charts. Monetary summaries and
-  price series separate currencies. The explorer builds intervals from whole history,
+  `metricsFromFillups` / `calcMetrics` (full history) and `consumptionSeries`
+  charts. `calcRecentMetrics(v, RECENT_METRICS_FILLS)` limits the fill list before
+  the same helper; Home hero and Settings vehicle cards use that window for
+  average L/100 km and cost/km, while `vehicleLastOdometerKm` supplies latest
+  mileage. Dashboard stat grid and “latest fill” side card still use full-history
+  `calcMetrics` where applicable. Monetary summaries and price series separate
+  currencies. The explorer builds intervals from whole history,
   then selects wholly contained intervals and purchases within inclusive dates.
   Its sliders and expanded zoom share one ephemeral window; chart sampling does
   not affect summaries. Urban profiles use positive segment distances. A trailing
   partial fill remains in purchase views but never closes a consumption interval;
   trace source flags in `js/import/jerrycan.js` and `source.original` when diagnosing
   a spike. See [ANALYSIS.md](ANALYSIS.md) for the calculation/diagnostic contract.
+- **Fill lists:** `fillIntervalEndMap` maps full-tank rows that close an interval;
+  `fillRowDistanceCell` always shows odometer, and adds interval distance,
+  consumption and single-currency cost/km when `intervalPurchasesCost` applies.
 - **Prices:** selected country/fuel → provider or optional proxy → normalized
   prices → promo comparison → sorted station list and map markers. the **magnifying glass** searches
   at the map centre; the **location target** uses geolocation then searches there. Station cards
@@ -146,6 +154,7 @@ user's fuel log. `.htaccess` and `api/cache/.htaccess` control hosting/cache acc
 
 - **New record fields:** forms and save handlers, import paths, migrations,
   JSON restore, CSV columns, calculations/display and README data examples.
+  Decimal-capable fields: `wireDecimalInputs`, `check-decimal-input.js`.
 - **New import format:** unrestricted file input in `settingsPage` (keep custom
   extensions selectable on mobile), file reading
   and detection in `importData`, validation/preview, vehicle matching, duplicates

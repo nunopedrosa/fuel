@@ -45,6 +45,9 @@ assert.ok(endRow.indexOf('ui.odometer') < 0, 'completed full-tank rows must not 
 assert.ok(endRow.indexOf('100,800 km') >= 0, 'fill rows must always show total mileage');
 assert.ok(endRow.indexOf('800 km') >= 0, 'interval distance should appear with consumption');
 assert.equal(run("calcRecentMetrics({id:'car'},10).avg"), 10);
+const dash = run("dashboard()");
+assert.ok(dash.includes('hero-odometer'), 'home vehicle card must show total mileage');
+assert.ok(dash.includes('100,800 km'), 'home vehicle card uses the latest odometer reading');
 assert.ok(endRow.indexOf('10 L/100 km') >= 0, 'interval consumption should be shown');
 assert.ok(endRow.indexOf('/km') >= 0, 'interval cost per km should be shown');
 const partialRow = run("fillRow(state.fillups[1], fillIntervalEndMap('car'))");

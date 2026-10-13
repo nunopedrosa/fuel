@@ -34,7 +34,7 @@ compatibility review. The optional browser scripts below are not part of CI.
 | `check-decimal-input.js` | Decimal comma and point entry, one decimal point, and text fields with a decimal keyboard |
 | `check-analysis.js` | Period boundaries, weighted summaries/trends, currency fallback, urban coverage and bounded sampling |
 | `check-analysis-ui.js` | Explorer controls, safe SVG, single observations, date-sized monthly bars and bounded label formatting |
-| `check-calc.js` | `calcMetrics`, parsers (`flexDate`, `parseDelimited`, …) |
+| `check-calc.js` | `calcMetrics`, `calcRecentMetrics`, dashboard hero mileage, parsers (`flexDate`, `parseDelimited`, …) |
 | `check-migrate.js` | `migrateData` and schema settings |
 | `check-providers.js` | All EU adapters (fixtures), registry and proxy contract |
 | `check-storage.js` | UTF-8 log/metadata sizes, browser quota and remaining space, missing/failed/invalid estimates, empty logs and translations |

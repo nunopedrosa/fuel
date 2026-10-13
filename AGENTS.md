@@ -27,6 +27,10 @@ it when files, entry points or important data flows move or change.
   large nationwide datasets or heavyweight parsers into the core application.
 - Preserve old-Safari layout fallbacks. Read [COMPATIBILITY.md](COMPATIBILITY.md)
   before changing compatibility-sensitive behaviour.
+- Numeric quantity and money fields must accept both `.` and `,` as the decimal
+  separator (locale comma keyboards). Do not use `type="number"` for those
+  fields: Safari drops comma input. Use `type="text"` with `inputmode="decimal"`,
+  normalise on input, then parse for storage. See `wireDecimalInputs` in `app.js`.
 
 ## Architecture and privacy
 
@@ -94,6 +98,17 @@ it when files, entry points or important data flows move or change.
 - Use consistent interval rules for dashboard summaries and charts. Flag invalid
   distances and unusual results without altering the underlying records. Clearly
   distinguish recorded purchases, derived consumption and estimates.
+- The Home hero card and Settings vehicle cards show **latest total mileage**
+  (odometer on the most recent fill-up, or the vehicle’s initial odometer when
+  there are no fills). Their headline average consumption (L/100 km) and cost per
+  km use a **recent fill-up window** (last ten fills, date order for that
+  vehicle), with the same full-tank interval rules applied inside that window.
+  Other dashboard stat tiles may still use full-history `calcMetrics`; do not
+  mix currencies when deriving cost/km.
+- Fill-up rows in dashboard and history always show the **recorded odometer**.
+  When a row ends a completed full-tank interval, show interval distance,
+  interval consumption and interval cost/km as secondary detail; do not replace
+  or hide the odometer.
 - Keep currencies and units explicit. Never silently treat a non-EUR amount as
   euros or sum different currencies. Any conversion needs an explicit policy.
 - Distinguish current station prices, official maxima, national averages and
