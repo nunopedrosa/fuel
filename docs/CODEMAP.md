@@ -18,7 +18,7 @@ analysis, import and receipt OCR scripts load after first paint via
 | --- | --- | --- |
 | Startup, state and navigation | [app.js](../app.js), [index.html](../index.html) | `init`, `refresh`, `route`, `render`, `wireCommon` |
 | Interface languages and symbols | [js/i18n/](../js/i18n/), [js/ui-icons.js](../js/ui-icons.js), [app.js](../app.js), [index.html](../index.html) | `FuelLogI18n.resolve`, `FuelLogI18n.use`, `tr`, `uiLocale`, `uiIcon`, `changeLanguage`, `updateLanguageUi`, `captureLanguageDraft`, `restoreLanguageDraft`; [I18N.md](I18N.md) |
-| Dashboard and history | [app.js](../app.js) | `dashboard`, `history`, `fillRow`, `fillRowDistanceCell`, `fillIntervalEndMap`, `analysisCard` |
+| Dashboard and history | [app.js](../app.js) | `dashboard`, `history`, `fillRow`, `fillRowDistanceCell`, `fillIntervalEndMap`, `calcRecentMetrics`, `vehicleCardMetricsHtml`, `analysisCard` |
 | Interactive history analysis | [js/analysis.js](../js/analysis.js), [js/analysis-ui.js](../js/analysis-ui.js) | `FuelLogAnalysis.prepare`, `select`, `monthly`, `sample`; `FuelLogAnalysisUI.render`, `mount`, `chart` |
 | Binary-plist decoding | [js/import/bplist.js](../js/import/bplist.js) | `FuelLogBplist.decode` |
 | Jerrycan normalization | [js/import/jerrycan.js](../js/import/jerrycan.js), [app.js](../app.js) | `FuelLogJerrycan.inspect`, `normalize`, `importJerrycan`, `prepareJerrycanBatch` |
