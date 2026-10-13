@@ -42,6 +42,7 @@ jobs:
           node scripts/check-i18n.js
           node scripts/check-device-language.js
           node scripts/check-sw-assets.js
+          node scripts/check-splash.js
           node scripts/check-sw-update.js
           node scripts/check-app-update.js
           node scripts/check-fuels.js

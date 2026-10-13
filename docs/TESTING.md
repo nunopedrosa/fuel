@@ -40,6 +40,7 @@ compatibility review. The optional browser scripts below are not part of CI.
 | `check-device-language.js` | Device preference order, regional matching, older-browser fallback, manual/current-language lock and country independence |
 | `check-i18n.js` | Language keys/placeholders, fallback, diagnostics, locale formatting, user text and canonical CSV stability |
 | `check-sw-assets.js` | Asset files, exact release query URLs and HTML/config/app/worker markers |
+| `check-splash.js` | iOS startup-image links, PNG sizes and portrait media queries |
 | `check-sw-update.js` | Fresh precache, coherent navigation, update metadata, worker replies and rejected incomplete releases |
 | `check-app-update.js` | Worker lifecycle, offline activation, stale-page reload and failed-install feedback |
 | `check-fuels.js` | Fuel catalogue matching, Portuguese commercial names and additive/simple distinctions |
