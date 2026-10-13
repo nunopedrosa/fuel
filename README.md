@@ -247,7 +247,7 @@ Chrome, Edge and other PWA-capable browsers can install FuelLog as a desktop web
 1. Open FuelLog.
 2. Go to **Settings** and configure the initial vehicle.
 3. After refuelling, choose **Add fill-up**.
-4. Enter the odometer, litres and total paid.
+4. Enter the odometer, litres and total paid. A point or a comma is accepted as the decimal separator.
 5. Leave **Full tank** enabled when the tank was filled completely.
 6. Save the entry.
 7. Continue recording fill-ups.

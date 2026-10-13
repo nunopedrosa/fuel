@@ -103,6 +103,8 @@ actual Safari 12 and Home Screen testing must be reported separately.
 
 ## Language selection and symbol controls
 
+Numeric fields use `type="text"` and `inputmode="decimal"`. A locale decimal comma from the iOS keyboard is rewritten to `.` on the `input` event, which Safari 12 supports. `beforeinput` is not required. The first `.` or `,` is the decimal point.
+
 English and European Portuguese use small local JavaScript catalogues in
 `js/i18n/`, cached with the app shell. Translation lookup and interpolation need
 no runtime dependency or new browser API. `Intl` uses explicit `en-GB`/`pt-PT`

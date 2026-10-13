@@ -40,6 +40,14 @@ assert.equal(metrics.distance, 800);
 assert.equal(run("consumptionSeries('car').length"), 1);
 assert.equal(run("consumptionSeries('car')[0].y"), 10);
 
+const endRow = run("fillRow(state.fillups[3], fillIntervalEndMap('car'))");
+assert.ok(endRow.indexOf('ui.odometer') < 0, 'completed full-tank rows must not label odometer');
+assert.ok(endRow.indexOf('800 km') >= 0, 'interval distance should headline the row');
+assert.ok(endRow.indexOf('10 L/100 km') >= 0, 'interval consumption should be shown');
+assert.ok(endRow.indexOf('/km') >= 0, 'interval cost per km should be shown');
+const partialRow = run("fillRow(state.fillups[1], fillIntervalEndMap('car'))");
+assert.ok(partialRow.indexOf('100,300 km') >= 0, 'partial rows keep the odometer reading');
+
 assert.equal(run("flexDate('01/02/2026 08:30')").slice(0, 16), '2026-02-01T08:30');
 assert.equal(run("flexNum('1.234,56')"), 1234.56);
 assert.equal(run("guessDelimiter('a;b;c\\nd;e;f')"), ';');

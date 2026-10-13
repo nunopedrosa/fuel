@@ -31,6 +31,7 @@ compatibility review. The optional browser scripts below are not part of CI.
 | `check-import-flow.js` | CSV/generic import, merge duplicates, Jerrycan batch |
 | `check-import-backup.js` | JSON backup merge/replace, `extractRowsFromJson` |
 | `check-urban-profile.js` | Optional urban slider, imported precision, clearing and estimate provenance |
+| `check-decimal-input.js` | Decimal comma and point entry, one decimal point, and text fields with a decimal keyboard |
 | `check-analysis.js` | Period boundaries, weighted summaries/trends, currency fallback, urban coverage and bounded sampling |
 | `check-analysis-ui.js` | Explorer controls, safe SVG, single observations, date-sized monthly bars and bounded label formatting |
 | `check-calc.js` | `calcMetrics`, parsers (`flexDate`, `parseDelimited`, …) |
