@@ -1,8 +1,8 @@
 # App-owned publication contract; common engine: BaseCentral deploy 1.0.0.
 APP_ID=fuel
 SOURCE_SUBDIR=.
-DEFAULT_DESTINATION="${DEPLOY_SITE:-$HOME/fuel.trekm.com}"
-DEPLOY_URL=https://fuel.trekm.com
+DEFAULT_DESTINATION="${DEPLOY_SITE:-$HOME/gas.basecentral.link}"
+DEPLOY_URL=https://gas.basecentral.link
 PUBLIC_FILES=$(cat <<'PUBLIC_FILES'
 api/stations-functions.php
 api/stations.php
