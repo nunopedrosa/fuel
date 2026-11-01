@@ -271,3 +271,7 @@ html.legacy-ios .content.prices-route #stationMap{min-height:180px}
 .top-left{flex:1 1 auto}.top-actions{flex:0 0 auto}.brand{min-width:0}
 @media(max-width:600px){.topbar{padding-left:10px;padding-right:10px}.brand{padding:0;font-size:18px}.brand img{width:32px;height:32px}.top-actions{gap:0}.top-actions>*+*{margin-left:4px}.status-pill{max-width:76px;white-space:normal;text-align:center;padding:4px 6px;font-size:10px}#pageKicker{display:none}.bottom-nav .nav-item small{font-size:10px}.language-choices{min-width:175px}}
 @media(max-width:360px){.brand span{font-size:16px}.brand img{width:28px;height:28px}.status-pill{max-width:64px}#installBtn{font-size:11px;padding:5px}}
+
+/* Shared controls 1.0.0: app-owned screen adapters. */
+@media screen {
+}

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-app-version="fuellog-v52-hero-odometer">
+<html lang="en" data-app-version="fuellog-v53-controls">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
@@ -23,8 +23,9 @@
   <link rel="apple-touch-startup-image" href="assets/splash/1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
   <link rel="apple-touch-startup-image" href="assets/splash/1320x2868.png" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
   <link rel="preload" href="fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="styles.css?v=fuellog-v52-hero-odometer" />
+  <link rel="stylesheet" href="styles.css?v=fuellog-v53-controls" />
   <title>FuelLog</title>
+<link rel="stylesheet" href="shared-controls.css?v=fuellog-v53-controls">
 </head>
 <body>
   <script>
@@ -35,7 +36,7 @@
   <div class="app-shell">
     <header class="topbar">
       <div class="top-left">
-        <button class="brand" data-route="dashboard" data-i18n-aria-label="ui.fuellog_dashboard" aria-label="FuelLog dashboard">
+        <button class="brand pwa-control" data-route="dashboard" data-i18n-aria-label="ui.fuellog_dashboard" aria-label="FuelLog dashboard">
           <img src="icons/icon.svg" alt="" />
           <span>FuelLog</span>
         </button>
@@ -43,9 +44,9 @@
       </div>
       <div class="top-actions">
         <span id="offlineBadge" class="status-pill">Offline ready</span>
-        <button data-i18n="ui.install" id="installBtn" class="btn ghost hidden">Install</button>
+        <button data-i18n="ui.install" id="installBtn" class="btn ghost hidden pwa-control">Install</button>
         <div class="language-picker">
-          <button type="button" id="languageButton" class="header-icon" aria-label="Language: English" title="Language: English" aria-expanded="false" aria-controls="languageChoices"><span aria-hidden="true">🇬🇧</span></button>
+          <button type="button" id="languageButton" class="header-icon pwa-control" aria-label="Language: English" title="Language: English" aria-expanded="false" aria-controls="languageChoices"><span aria-hidden="true">🇬🇧</span></button>
           <div id="languageChoices" class="language-choices hidden" role="group" aria-label="Choose language"></div>
         </div>
         <a id="suggestBtn" class="fab hidden" href="mailto:nuno.f.pedrosa@gmail.com" data-i18n-aria-label="ui.email_a_suggestion" data-i18n-title="ui.suggest" aria-label="Email a suggestion" title="Suggest">✉</a>
@@ -66,9 +67,9 @@
             <p class="muted" aria-hidden="true">—</p>
           </div>
           <div class="actions-inline dashboard-fill-actions">
-            <button class="btn" type="button" tabindex="-1" disabled>+ Add fill-up</button>
-            <button type="button" class="btn secondary" tabindex="-1" disabled aria-hidden="true">📷 Scan</button>
-            <button type="button" class="btn ghost" tabindex="-1" disabled aria-hidden="true">Photos</button>
+            <button class="btn pwa-control" type="button" tabindex="-1" disabled>+ Add fill-up</button>
+            <button type="button" class="btn secondary pwa-control" tabindex="-1" disabled aria-hidden="true">📷 Scan</button>
+            <button type="button" class="btn ghost pwa-control" tabindex="-1" disabled aria-hidden="true">Photos</button>
           </div>
         </div>
       </div>
@@ -81,11 +82,11 @@
     </main>
 
     <nav class="bottom-nav" data-i18n-aria-label="ui.primary_navigation" aria-label="Primary navigation">
-      <button data-route="dashboard" class="nav-item active"><span>⌂</span><small data-i18n="nav.home">Home</small></button>
-      <button data-route="add" class="nav-item"><span>＋</span><small data-i18n="nav.fillup">Fill-up</small></button>
-      <button data-route="history" class="nav-item"><span>≡</span><small data-i18n="nav.history">History</small></button>
-      <button data-route="prices" class="nav-item"><span>€</span><small data-i18n="nav.prices">Prices</small></button>
-      <button data-route="settings" class="nav-item"><span>⚙</span><small data-i18n="nav.settings">Settings</small></button>
+      <button data-route="dashboard" class="nav-item active pwa-control"><span>⌂</span><small data-i18n="nav.home">Home</small></button>
+      <button data-route="add" class="nav-item pwa-control"><span>＋</span><small data-i18n="nav.fillup">Fill-up</small></button>
+      <button data-route="history" class="nav-item pwa-control"><span>≡</span><small data-i18n="nav.history">History</small></button>
+      <button data-route="prices" class="nav-item pwa-control"><span>€</span><small data-i18n="nav.prices">Prices</small></button>
+      <button data-route="settings" class="nav-item pwa-control"><span><svg class="pwa-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m9 3 .7-2h4.6l.7 2 2 1.2 2.1-.4 2.3 4-1.4 1.6v2.4l1.4 1.6-2.3 4-2.1-.4-2 1.2-.7 2H9.7l-.7-2-2-1.2-2.1.4-2.3-4L4 11.8V9.4L2.6 7.8l2.3-4 2.1.4Z" transform="translate(0 1)"/><circle cx="12" cy="12" r="3"/></svg></span><small data-i18n="nav.settings">Settings</small></button>
     </nav>
   </div>
   <div id="modalRoot" class="modal-root hidden" aria-hidden="true">
@@ -94,22 +95,22 @@
       <h2 id="modalTitle" class="modal-title"></h2>
       <div id="modalBody" class="modal-body"></div>
       <div class="modal-actions form-actions">
-        <button type="button" id="modalCancel" class="btn ghost">Cancel</button>
-        <button type="button" id="modalConfirm" class="btn">OK</button>
+        <button type="button" id="modalCancel" class="btn ghost pwa-control">Cancel</button>
+        <button type="button" id="modalConfirm" class="btn pwa-control">OK</button>
       </div>
     </div>
   </div>
   <div id="toast" class="toast" role="status"></div>
-  <script defer src="js/i18n/i18n.js?v=fuellog-v52-hero-odometer"></script>
-  <script defer src="js/i18n/en.js?v=fuellog-v52-hero-odometer"></script>
-  <script defer src="js/i18n/pt.js?v=fuellog-v52-hero-odometer"></script>
-  <script defer src="js/ui-icons.js?v=fuellog-v52-hero-odometer"></script>
-  <script defer src="config.js?v=fuellog-v52-hero-odometer"></script>
-  <script defer src="db.js?v=fuellog-v52-hero-odometer"></script>
-  <script defer src="js/prices/fuels.js?v=fuellog-v52-hero-odometer"></script>
-  <script defer src="js/prices/providers.js?v=fuellog-v52-hero-odometer"></script>
-  <script defer src="js/prices/promos.js?v=fuellog-v52-hero-odometer"></script>
-  <script defer src="js/data.js?v=fuellog-v52-hero-odometer"></script>
-  <script defer src="app.js?v=fuellog-v52-hero-odometer"></script>
+  <script defer src="js/i18n/i18n.js?v=fuellog-v53-controls"></script>
+  <script defer src="js/i18n/en.js?v=fuellog-v53-controls"></script>
+  <script defer src="js/i18n/pt.js?v=fuellog-v53-controls"></script>
+  <script defer src="js/ui-icons.js?v=fuellog-v53-controls"></script>
+  <script defer src="config.js?v=fuellog-v53-controls"></script>
+  <script defer src="db.js?v=fuellog-v53-controls"></script>
+  <script defer src="js/prices/fuels.js?v=fuellog-v53-controls"></script>
+  <script defer src="js/prices/providers.js?v=fuellog-v53-controls"></script>
+  <script defer src="js/prices/promos.js?v=fuellog-v53-controls"></script>
+  <script defer src="js/data.js?v=fuellog-v53-controls"></script>
+  <script defer src="app.js?v=fuellog-v53-controls"></script>
 </body>
 </html>
